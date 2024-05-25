@@ -22,6 +22,7 @@ import Logo from '../../components/icons/Logo';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { ILoginCredentials } from '../../types';
 import { self, login } from '../../http/api';
+import { useAuthStore } from '../../store';
 
 const passwordRules = [
     {
@@ -68,6 +69,7 @@ const LoginPage = () => {
     const [password, setPassword] = useState('');
     const [isPasswordFocused, setIsPasswordFocused] = useState(false);
     const [messageApi, contextHolder] = message.useMessage();
+    const { setUser } = useAuthStore();
 
     const validatePassword = (_rule: RuleObject, value: string) => {
         const errors = passwordRules
@@ -95,7 +97,7 @@ const LoginPage = () => {
                 content: 'Login successful!',
             });
             const { data } = await refetch();
-            console.log(data);
+            setUser(data);
         },
         onError: async (error) => {
             messageApi.open({
