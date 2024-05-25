@@ -19,9 +19,9 @@ import { useState } from 'react';
 import './loginPage.css';
 import { RuleObject } from 'antd/es/form';
 import Logo from '../../components/icons/Logo';
-import { useMutation } from '@tanstack/react-query';
-import { LoginCredentials } from '../../types';
-import { login } from '../../http/api';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { ILoginCredentials } from '../../types';
+import { self, login } from '../../http/api';
 
 const passwordRules = [
     {
@@ -46,9 +46,18 @@ const passwordRules = [
     },
 ];
 
-const loginUser = async (credentials: LoginCredentials) => {
+const loginUser = async (credentials: ILoginCredentials) => {
     try {
         const { data } = await login(credentials);
+        return data;
+    } catch (error) {
+        return Promise.reject(error);
+    }
+};
+
+const getSelf = async () => {
+    try {
+        const { data } = await self();
         return data;
     } catch (error) {
         return Promise.reject(error);
@@ -70,6 +79,12 @@ const LoginPage = () => {
         return Promise.resolve();
     };
 
+    const { refetch } = useQuery({
+        queryKey: ['self'],
+        queryFn: getSelf,
+        enabled: false,
+    });
+
     const { mutate, isPending } = useMutation({
         mutationKey: ['login'],
         mutationFn: loginUser,
@@ -78,15 +93,15 @@ const LoginPage = () => {
                 key: 'loginSuccess',
                 type: 'success',
                 content: 'Login successful!',
-                duration: 1,
             });
+            const { data } = await refetch();
+            console.log(data);
         },
         onError: async (error) => {
             messageApi.open({
                 key: 'loginError',
                 type: 'error',
                 content: error?.message,
-                duration: 1,
             });
         },
     });
@@ -138,7 +153,7 @@ const LoginPage = () => {
                                 });
                             }}
                         >
-                            <Form.Item<LoginCredentials>
+                            <Form.Item<ILoginCredentials>
                                 name='email'
                                 validateDebounce={300}
                                 hasFeedback
@@ -159,7 +174,7 @@ const LoginPage = () => {
                                 />
                             </Form.Item>
 
-                            <Form.Item<LoginCredentials>
+                            <Form.Item<ILoginCredentials>
                                 name='password'
                                 hasFeedback
                                 validateDebounce={300}
@@ -219,7 +234,7 @@ const LoginPage = () => {
                                 })}
                             </div>
                             <Form.Item>
-                                <Form.Item<LoginCredentials>
+                                <Form.Item<ILoginCredentials>
                                     name='remember'
                                     valuePropName='checked'
                                     style={{ float: 'left' }}
