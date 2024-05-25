@@ -1,5 +1,13 @@
-import { Card, Input, Layout, Space, Button, Form, Checkbox } from 'antd';
-import type { FormProps } from 'antd';
+import {
+    Card,
+    Input,
+    Layout,
+    Space,
+    Button,
+    Form,
+    Checkbox,
+    message,
+} from 'antd';
 import {
     LockFilled,
     UserOutlined,
@@ -11,12 +19,9 @@ import { useState } from 'react';
 import './loginPage.css';
 import { RuleObject } from 'antd/es/form';
 import Logo from '../../components/icons/Logo';
-
-type FieldType = {
-    email?: string;
-    password?: string;
-    remember?: string;
-};
+import { useMutation } from '@tanstack/react-query';
+import { LoginCredentials } from '../../types';
+import { login } from '../../http/api';
 
 const passwordRules = [
     {
@@ -41,13 +46,19 @@ const passwordRules = [
     },
 ];
 
-const onFinish: FormProps<FieldType>['onFinish'] = (values) => {
-    console.log('Success:', values);
+const loginUser = async (credentials: LoginCredentials) => {
+    try {
+        const { data } = await login(credentials);
+        return data;
+    } catch (error) {
+        return Promise.reject(error);
+    }
 };
 
 const LoginPage = () => {
     const [password, setPassword] = useState('');
     const [isPasswordFocused, setIsPasswordFocused] = useState(false);
+    const [messageApi, contextHolder] = message.useMessage();
 
     const validatePassword = (_rule: RuleObject, value: string) => {
         const errors = passwordRules
@@ -58,8 +69,31 @@ const LoginPage = () => {
         }
         return Promise.resolve();
     };
+
+    const { mutate, isPending } = useMutation({
+        mutationKey: ['login'],
+        mutationFn: loginUser,
+        onSuccess: async () => {
+            messageApi.open({
+                key: 'loginSuccess',
+                type: 'success',
+                content: 'Login successful!',
+                duration: 1,
+            });
+        },
+        onError: async (error) => {
+            messageApi.open({
+                key: 'loginError',
+                type: 'error',
+                content: error?.message,
+                duration: 1,
+            });
+        },
+    });
+
     return (
         <>
+            {contextHolder}
             <Layout
                 style={{
                     height: '100vh',
@@ -90,12 +124,21 @@ const LoginPage = () => {
                     >
                         <Form
                             name='login'
-                            initialValues={{ remember: true }}
+                            initialValues={{
+                                remember: true,
+                                email: 'admin@pizzeria.in',
+                                password: 'Admin1@pizzeria',
+                            }}
                             style={{ maxWidth: 300 }}
                             autoComplete='off'
-                            onFinish={onFinish}
+                            onFinish={(values) => {
+                                mutate({
+                                    email: values.email,
+                                    password: values.password,
+                                });
+                            }}
                         >
-                            <Form.Item<FieldType>
+                            <Form.Item<LoginCredentials>
                                 name='email'
                                 validateDebounce={300}
                                 hasFeedback
@@ -116,7 +159,7 @@ const LoginPage = () => {
                                 />
                             </Form.Item>
 
-                            <Form.Item<FieldType>
+                            <Form.Item<LoginCredentials>
                                 name='password'
                                 hasFeedback
                                 validateDebounce={300}
@@ -176,7 +219,7 @@ const LoginPage = () => {
                                 })}
                             </div>
                             <Form.Item>
-                                <Form.Item<FieldType>
+                                <Form.Item<LoginCredentials>
                                     name='remember'
                                     valuePropName='checked'
                                     style={{ float: 'left' }}
@@ -194,6 +237,7 @@ const LoginPage = () => {
                                     style={{ width: '100%' }}
                                     type='primary'
                                     htmlType='submit'
+                                    loading={isPending}
                                 >
                                     Log in
                                 </Button>
