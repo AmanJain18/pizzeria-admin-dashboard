@@ -1,0 +1,11 @@
+.validation-message {
+    opacity: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: opacity 0.3s ease, max-height 0.3s ease;
+}
+
+.validation-message.show {
+    opacity: 1;
+    max-height: 110px; /* Adjust based on the content size */
+}
