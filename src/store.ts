@@ -12,6 +12,6 @@ export const useAuthStore = create<IAuthState>()(
     devtools((set) => ({
         user: null,
         setUser: (user) => set({ user }, false, 'setUser'),
-        logoutUser: () => set({ user: null }, false, 'setUser'),
+        logoutUser: () => set({ user: null }, false, 'logoutUser'),
     })),
 );
