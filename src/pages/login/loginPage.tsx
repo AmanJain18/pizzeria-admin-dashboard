@@ -21,8 +21,9 @@ import { RuleObject } from 'antd/es/form';
 import Logo from '../../components/icons/Logo';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { ILoginCredentials } from '../../types';
-import { self, login } from '../../http/api';
+import { self, login, logout } from '../../http/api';
 import { useAuthStore } from '../../store';
+import { hasPermission } from '../../hooks/hasPermission';
 
 const passwordRules = [
     {
@@ -70,6 +71,7 @@ const LoginPage = () => {
     const [isPasswordFocused, setIsPasswordFocused] = useState(false);
     const [messageApi, contextHolder] = message.useMessage();
     const { setUser } = useAuthStore();
+    const { isAllowed } = hasPermission();
 
     const validatePassword = (_rule: RuleObject, value: string) => {
         const errors = passwordRules
@@ -91,17 +93,24 @@ const LoginPage = () => {
         mutationKey: ['login'],
         mutationFn: loginUser,
         onSuccess: async () => {
+            const { data } = await refetch();
+            if (!isAllowed(data)) {
+                await logout(); // Ensure that the user is logged out if not allowed
+                messageApi.open({
+                    type: 'error',
+                    content: 'You do not have permission to access this page!',
+                });
+                return;
+            }
+            // Success case: User is allowed
+            setUser(data);
             messageApi.open({
-                key: 'loginSuccess',
                 type: 'success',
                 content: 'Login successful!',
             });
-            const { data } = await refetch();
-            setUser(data);
         },
         onError: async (error) => {
             messageApi.open({
-                key: 'loginError',
                 type: 'error',
                 content: error?.message,
             });
