@@ -70,7 +70,7 @@ const LoginPage = () => {
     const [password, setPassword] = useState('');
     const [isPasswordFocused, setIsPasswordFocused] = useState(false);
     const [messageApi, contextHolder] = message.useMessage();
-    const { setUser } = useAuthStore();
+    const { setUser, logoutUser } = useAuthStore();
     const { isAllowed } = hasPermission();
 
     const validatePassword = (_rule: RuleObject, value: string) => {
@@ -89,17 +89,26 @@ const LoginPage = () => {
         enabled: false,
     });
 
-    const { mutate, isPending } = useMutation({
+    const { mutate: logoutMutate } = useMutation({
+        mutationKey: ['logout'],
+        mutationFn: logout,
+        onSuccess: async () => {
+            messageApi.open({
+                type: 'error',
+                content: 'You do not have permission to access this page!',
+            });
+            logoutUser();
+            return
+        },
+    });
+
+    const { mutate: loginMutate, isPending } = useMutation({
         mutationKey: ['login'],
         mutationFn: loginUser,
         onSuccess: async () => {
             const { data } = await refetch();
             if (!isAllowed(data)) {
-                await logout(); // Ensure that the user is logged out if not allowed
-                messageApi.open({
-                    type: 'error',
-                    content: 'You do not have permission to access this page!',
-                });
+                logoutMutate(); // Ensure that the user is logged out if not allowed
                 return;
             }
             // Success case: User is allowed
@@ -158,7 +167,7 @@ const LoginPage = () => {
                             style={{ maxWidth: 300 }}
                             autoComplete='off'
                             onFinish={(values) => {
-                                mutate({
+                                loginMutate({
                                     email: values.email,
                                     password: values.password,
                                 });
