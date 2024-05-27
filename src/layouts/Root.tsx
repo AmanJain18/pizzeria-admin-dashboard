@@ -1,21 +1,44 @@
 import { Outlet } from 'react-router-dom';
 import { useAuthStore } from '../store';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Layout, Spin } from 'antd';
+import { useQuery } from '@tanstack/react-query';
+import { self } from '../http/api';
+import { AxiosError } from 'axios';
+
+const getSelf = async () => {
+    try {
+        const { data } = await self();
+        return data;
+    } catch (error) {
+        return Promise.reject(error);
+    }
+};
 
 const Root = () => {
-    const { fetchUser } = useAuthStore();
-    const [loading, setLoading] = useState(true);
+    const { setUser } = useAuthStore();
+
+    const { data, isLoading } = useQuery({
+        queryKey: ['self'],
+        queryFn: getSelf,
+        retry: (failureCount: number, error) => {
+            if (
+                error instanceof AxiosError &&
+                error?.response?.status === 401
+            ) {
+                return false;
+            }
+            return failureCount < 3;
+        },
+    });
 
     useEffect(() => {
-        const loadUser = async () => {
-            await fetchUser();
-            setLoading(false);
-        };
-        loadUser();
-    }, [fetchUser]);
+        if (data) {
+            setUser(data);
+        }
+    }, [data, setUser]);
 
-    if (loading) {
+    if (isLoading) {
         return (
             <Layout
                 style={{
