@@ -119,13 +119,11 @@ const Dashboard = () => {
                     <Flex align='center' justify='space-between'>
                         <Badge
                             text={
-                                user
-                                    ? user.role === 'admin'
-                                        ? 'Global'
-                                        : user.role === 'manager'
-                                    : 'Manager'
+                                user.role === 'admin'
+                                    ? 'You are an admin'
+                                    : user.tenant?.name
                             }
-                            status='success'
+                            status={user.role === 'admin' ? 'success' : 'processing'}
                         />
                         <Space size={18}>
                             <Badge dot={true}>
