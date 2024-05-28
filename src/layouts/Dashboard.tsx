@@ -1,18 +1,34 @@
 import { useState } from 'react';
 import Icon from '@ant-design/icons';
-import { Layout, Menu, theme } from 'antd';
+import {
+    Avatar,
+    Badge,
+    Dropdown,
+    Flex,
+    Layout,
+    Menu,
+    Space,
+    theme,
+} from 'antd';
 import type { MenuProps } from 'antd';
 import { Outlet, Navigate, NavLink } from 'react-router-dom';
 import { useAuthStore } from '../store';
 import Logo from '../components/icons/Logo';
-import { MdHome, MdShoppingBasket, MdRestaurant, MdPeople, MdDiscount } from 'react-icons/md';
-import { FaClipboardList } from 'react-icons/fa';
+import {
+    MdHome,
+    MdShoppingBasket,
+    MdRestaurant,
+    MdPeople,
+    MdDiscount,
+    MdLogout,
+} from 'react-icons/md';
+import { FaClipboardList, FaBell } from 'react-icons/fa';
+import { useMutation } from '@tanstack/react-query';
+import { logout } from '../http/api';
 
 const { Header, Content, Footer, Sider } = Layout;
 
-type MenuItem = Required<MenuProps>['items'][number];
-
-const items: MenuItem[] = [
+const sidebarItems: MenuProps['items'] = [
     {
         key: '1',
         icon: <Icon component={MdHome} style={{ fontSize: '20px' }} />,
@@ -25,27 +41,19 @@ const items: MenuItem[] = [
     },
     {
         key: '3',
-        icon: <Icon component={MdShoppingBasket} style={{ fontSize: '20px' }} />,
+        icon: (
+            <Icon component={MdShoppingBasket} style={{ fontSize: '20px' }} />
+        ),
         label: <NavLink to='/products'>Products</NavLink>,
     },
     {
         key: '4',
-        icon: (
-            <Icon
-                component={MdPeople}
-                style={{ fontSize: '20px' }}
-            />
-        ),
+        icon: <Icon component={MdPeople} style={{ fontSize: '20px' }} />,
         label: <NavLink to='/users'>Users</NavLink>,
     },
     {
         key: '5',
-        icon: (
-            <Icon
-                component={MdRestaurant}
-                style={{ fontSize: '20px' }}
-            />
-        ),
+        icon: <Icon component={MdRestaurant} style={{ fontSize: '20px' }} />,
         label: <NavLink to='/restaurants'>Restaurants</NavLink>,
     },
     {
@@ -55,12 +63,29 @@ const items: MenuItem[] = [
     },
 ];
 
+const avatarItems: MenuProps['items'] = [
+    {
+        key: '1',
+        icon: <Icon component={MdLogout} style={{ fontSize: '20px' }} />,
+        label: 'Logout',
+    },
+];
+
 const Dashboard = () => {
-    const { user } = useAuthStore();
+    const { user, logoutUser } = useAuthStore();
     const [collapsed, setCollapsed] = useState(false);
     const {
-        token: { colorBgContainer },
+        token: { colorBgContainer, colorPrimary },
     } = theme.useToken();
+
+    const { mutate: logoutMutate } = useMutation({
+        mutationKey: ['logout'],
+        mutationFn: logout,
+        onSuccess: async () => {
+            logoutUser();
+            return;
+        },
+    });
 
     if (user === null) {
         return <Navigate to='/auth/login' replace={true} />;
@@ -81,16 +106,58 @@ const Dashboard = () => {
                     theme='light'
                     defaultSelectedKeys={['1']}
                     mode='inline'
-                    items={items}
+                    items={sidebarItems}
                 />
             </Sider>
             <Layout>
                 <Header
                     style={{
-                        padding: 0,
+                        padding: '0 16px',
                         background: colorBgContainer,
                     }}
-                />
+                >
+                    <Flex align='center' justify='space-between'>
+                        <Badge
+                            text={
+                                user
+                                    ? user.role === 'admin'
+                                        ? 'Global'
+                                        : user.role === 'manager'
+                                    : 'Manager'
+                            }
+                            status='success'
+                        />
+                        <Space size={18}>
+                            <Badge dot={true}>
+                                <Icon
+                                    component={FaBell}
+                                    style={{ fontSize: '18px' }}
+                                />
+                            </Badge>
+                            <Dropdown
+                                menu={{
+                                    items: avatarItems,
+                                    onClick: ({ key }) => {
+                                        if (key === '1') {
+                                            logoutMutate();
+                                        }
+                                    },
+                                }}
+                                placement='bottomLeft'
+                                arrow
+                            >
+                                <Avatar
+                                    style={{
+                                        float: 'right',
+                                        backgroundColor: colorPrimary,
+                                    }}
+                                >
+                                    {user.firstName[0]}
+                                </Avatar>
+                            </Dropdown>
+                        </Space>
+                    </Flex>
+                </Header>
                 <Content style={{ margin: '0 16px' }}>
                     <Outlet />
                 </Content>
