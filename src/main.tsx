@@ -17,6 +17,12 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                     token: {
                         colorPrimary: '#1890ff',
                         colorLink: '#1890ff',
+                        colorSuccess: '#219653',
+                        colorSuccessBg: '#e4f2ea',
+                        colorWarning: '#14AAFF',
+                        colorWarningBg: '#e3f5ff',
+                        colorError: '#eb5757',
+                        colorErrorBg: '#fdebeb',
                     },
                 }}
             >
