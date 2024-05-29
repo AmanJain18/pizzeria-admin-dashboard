@@ -19,7 +19,12 @@ const getAllUsers = async () => {
 const User = () => {
     const { user } = useAuthStore();
 
-    const { data, isLoading, isError, error } = useQuery({
+    const {
+        data: userData,
+        isLoading,
+        isError,
+        error,
+    } = useQuery({
         queryKey: ['getusers'],
         queryFn: getAllUsers,
     });
@@ -195,18 +200,20 @@ const User = () => {
                 ]}
             />
 
-            <UsersFilter />
+            <UsersFilter
+                onFilterChange={(filterName, filterValue) => {
+                    console.log(filterName, filterValue);
+                }}
+            />
 
             {isLoading && <p>Loading...</p>}
             {isError && <p>Error: {error as unknown as string}</p>}
-            {data && (
+            {userData && (
                 <Table
                     columns={columns}
-                    dataSource={data.map((user: IUser) => ({
-                        ...user,
-                        key: user.id,
-                    }))}
+                    dataSource={userData}
                     style={{ marginTop: '20px' }}
+                    rowKey={'id'}
                 />
             )}
         </>

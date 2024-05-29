@@ -1,20 +1,32 @@
 import { Button, Card, Col, Input, Row, Select } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 
-const UsersFilter = () => {
+type UsersFilterProps = {
+    onFilterChange: (filterName: string, filterValue: string) => void;
+};
+const UsersFilter = ({ onFilterChange }: UsersFilterProps) => {
     return (
-        <Card style={{marginTop: '20px'}}>
+        <Card style={{ marginTop: '20px' }}>
             <Row gutter={8}>
                 <Col span={12}>
                     <Row gutter={16}>
                         <Col span={8}>
-                            <Input.Search placeholder='Search' />
+                            <Input.Search
+                                placeholder='Search'
+                                allowClear={true}
+                                onChange={(e) =>
+                                    onFilterChange('searchQueryFilter', e.target.value)
+                                }
+                            />
                         </Col>
                         <Col span={8}>
                             <Select
                                 style={{ width: '100%' }}
                                 placeholder='Role'
                                 allowClear={true}
+                                onChange={(selectedItem) =>
+                                    onFilterChange('roleFilter', selectedItem)
+                                }
                             >
                                 <Select.Option value='admin'>
                                     Admin
@@ -32,6 +44,9 @@ const UsersFilter = () => {
                                 style={{ width: '100%' }}
                                 placeholder='Status'
                                 allowClear={true}
+                                onChange={(selectedItem) =>
+                                    onFilterChange('statusFilter', selectedItem)
+                                }
                             >
                                 <Select.Option value='ban'>Ban</Select.Option>
                                 <Select.Option value='active'>
