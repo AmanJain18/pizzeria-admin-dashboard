@@ -1,14 +1,15 @@
 import { Breadcrumb, Table, TableProps, Tag } from 'antd';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { RightOutlined } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
 import { getUsers } from '../../http/api';
 import { IUser } from '../../types';
+import { useAuthStore } from '../../store';
 
 const getAllUsers = async () => {
     try {
         const { data } = await getUsers();
-        console.log(data)
+        console.log(data);
         return data;
     } catch (error) {
         return Promise.reject(error);
@@ -16,10 +17,16 @@ const getAllUsers = async () => {
 };
 
 const User = () => {
+    const { user } = useAuthStore();
+
     const { data, isLoading, isError, error } = useQuery({
         queryKey: ['getusers'],
         queryFn: getAllUsers,
     });
+
+    if (!user || user.role !== 'admin') {
+        return <Navigate to='/' replace={true} />;
+    }
 
     const columns: TableProps<IUser>['columns'] = [
         {
@@ -170,7 +177,7 @@ const User = () => {
                     return tenant.name;
                 }
                 return 'N/A';
-            }
+            },
         },
     ];
 

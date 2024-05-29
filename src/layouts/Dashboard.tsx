@@ -28,40 +28,62 @@ import { logout } from '../http/api';
 
 const { Header, Content, Footer, Sider } = Layout;
 
-const sidebarItems: MenuProps['items'] = [
-    {
-        key: '1',
-        icon: <Icon component={MdHome} style={{ fontSize: '20px' }} />,
-        label: <NavLink to='/'>Home</NavLink>,
-    },
-    {
-        key: '2',
-        icon: <Icon component={FaClipboardList} style={{ fontSize: '20px' }} />,
-        label: <NavLink to='/orders'>Orders</NavLink>,
-    },
-    {
-        key: '3',
-        icon: (
-            <Icon component={MdShoppingBasket} style={{ fontSize: '20px' }} />
-        ),
-        label: <NavLink to='/products'>Products</NavLink>,
-    },
-    {
-        key: '4',
-        icon: <Icon component={MdPeople} style={{ fontSize: '20px' }} />,
-        label: <NavLink to='/users'>Users</NavLink>,
-    },
-    {
-        key: '5',
-        icon: <Icon component={MdRestaurant} style={{ fontSize: '20px' }} />,
-        label: <NavLink to='/restaurants'>Restaurants</NavLink>,
-    },
-    {
-        key: '6',
-        icon: <Icon component={MdDiscount} style={{ fontSize: '20px' }} />,
-        label: 'Promos',
-    },
-];
+const getMenuItems = (role: string) => {
+    const baseItems = [
+        {
+            key: 1,
+            icon: <Icon component={MdHome} style={{ fontSize: '20px' }} />,
+            label: <NavLink to='/'>Home</NavLink>,
+        },
+        {
+            key: 2,
+            icon: (
+                <Icon
+                    component={FaClipboardList}
+                    style={{ fontSize: '20px' }}
+                />
+            ),
+            label: <NavLink to='/orders'>Orders</NavLink>,
+        },
+        {
+            key: 3,
+            icon: (
+                <Icon
+                    component={MdShoppingBasket}
+                    style={{ fontSize: '20px' }}
+                />
+            ),
+            label: <NavLink to='/products'>Products</NavLink>,
+        },
+        {
+            key: 5,
+            icon: (
+                <Icon component={MdRestaurant} style={{ fontSize: '20px' }} />
+            ),
+            label: <NavLink to='/restaurants'>Restaurants</NavLink>,
+        },
+        {
+            key: 6,
+            icon: <Icon component={MdDiscount} style={{ fontSize: '20px' }} />,
+            label: 'Promos',
+        },
+    ];
+
+    if (role === 'admin') {
+        return [
+            ...baseItems,
+            {
+                key: 4,
+                icon: (
+                    <Icon component={MdPeople} style={{ fontSize: '20px' }} />
+                ),
+                label: <NavLink to='/users'>Users</NavLink>,
+            },
+        ].sort((a, b) => a.key - b.key);
+    }
+
+    return baseItems.sort((a, b) => a.key - b.key);
+};
 
 const avatarItems: MenuProps['items'] = [
     {
@@ -90,6 +112,8 @@ const Dashboard = () => {
     if (user === null) {
         return <Navigate to='/auth/login' replace={true} />;
     }
+
+    const sidebarItems: MenuProps['items'] = getMenuItems(user.role);
 
     return (
         <Layout style={{ minHeight: '100vh' }}>
@@ -123,7 +147,9 @@ const Dashboard = () => {
                                     ? 'You are an admin'
                                     : user.tenant?.name
                             }
-                            status={user.role === 'admin' ? 'success' : 'processing'}
+                            status={
+                                user.role === 'admin' ? 'success' : 'processing'
+                            }
                         />
                         <Space size={18}>
                             <Badge dot={true}>
