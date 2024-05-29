@@ -5,11 +5,11 @@ import { useQuery } from '@tanstack/react-query';
 import { getUsers } from '../../http/api';
 import { IUser } from '../../types';
 import { useAuthStore } from '../../store';
+import UsersFilter from './UsersFilter';
 
 const getAllUsers = async () => {
     try {
         const { data } = await getUsers();
-        console.log(data);
         return data;
     } catch (error) {
         return Promise.reject(error);
@@ -194,6 +194,9 @@ const User = () => {
                     },
                 ]}
             />
+
+            <UsersFilter />
+
             {isLoading && <p>Loading...</p>}
             {isError && <p>Error: {error as unknown as string}</p>}
             {data && (
