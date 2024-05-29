@@ -1,10 +1,10 @@
-import { Button, Card, Col, Input, Row, Select } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
+import { Card, Col, Input, Row, Select } from 'antd';
 
 type UsersFilterProps = {
+    children?: React.ReactNode;
     onFilterChange: (filterName: string, filterValue: string) => void;
 };
-const UsersFilter = ({ onFilterChange }: UsersFilterProps) => {
+const UsersFilter = ({ onFilterChange, children }: UsersFilterProps) => {
     return (
         <Card style={{ marginTop: '20px' }}>
             <Row gutter={8}>
@@ -15,7 +15,10 @@ const UsersFilter = ({ onFilterChange }: UsersFilterProps) => {
                                 placeholder='Search'
                                 allowClear={true}
                                 onChange={(e) =>
-                                    onFilterChange('searchQueryFilter', e.target.value)
+                                    onFilterChange(
+                                        'searchQueryFilter',
+                                        e.target.value,
+                                    )
                                 }
                             />
                         </Col>
@@ -60,9 +63,7 @@ const UsersFilter = ({ onFilterChange }: UsersFilterProps) => {
                     span={12}
                     style={{ display: 'flex', justifyContent: 'end' }}
                 >
-                    <Button type='primary' icon={<PlusOutlined />}>
-                        Add User
-                    </Button>
+                    {children}
                 </Col>
             </Row>
         </Card>

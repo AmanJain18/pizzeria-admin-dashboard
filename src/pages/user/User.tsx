@@ -1,4 +1,13 @@
-import { Breadcrumb, Table, TableProps, Tag } from 'antd';
+import {
+    Breadcrumb,
+    Button,
+    Drawer,
+    Space,
+    Table,
+    TableProps,
+    Tag,
+} from 'antd';
+import { PlusOutlined } from '@ant-design/icons';
 import { Link, Navigate } from 'react-router-dom';
 import { RightOutlined } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
@@ -6,6 +15,7 @@ import { getUsers } from '../../http/api';
 import { IUser } from '../../types';
 import { useAuthStore } from '../../store';
 import UsersFilter from './UsersFilter';
+import { useState } from 'react';
 
 const getAllUsers = async () => {
     try {
@@ -18,6 +28,7 @@ const getAllUsers = async () => {
 
 const User = () => {
     const { user } = useAuthStore();
+    const [drawerOpen, setDrawerOpen] = useState(false);
 
     const {
         data: userData,
@@ -204,7 +215,15 @@ const User = () => {
                 onFilterChange={(filterName, filterValue) => {
                     console.log(filterName, filterValue);
                 }}
-            />
+            >
+                <Button
+                    type='primary'
+                    icon={<PlusOutlined />}
+                    onClick={() => setDrawerOpen(true)}
+                >
+                    Add User
+                </Button>
+            </UsersFilter>
 
             {isLoading && <p>Loading...</p>}
             {isError && <p>Error: {error as unknown as string}</p>}
@@ -216,6 +235,26 @@ const User = () => {
                     rowKey={'id'}
                 />
             )}
+
+            <Drawer
+                title='Create User'
+                placement='right'
+                size={'large'}
+                closable={true}
+                onClose={() => setDrawerOpen(false)}
+                open={drawerOpen}
+                destroyOnClose={true}
+                extra={
+                    <Space>
+                        <Button onClick={() => setDrawerOpen(false)}>
+                            Cancel
+                        </Button>
+                        <Button type='primary'>OK</Button>
+                    </Space>
+                }
+            >
+                <p>Form goes here</p>
+            </Drawer>
         </>
     );
 };
