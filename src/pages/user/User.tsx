@@ -2,6 +2,7 @@ import {
     Breadcrumb,
     Button,
     Drawer,
+    Form,
     Space,
     Table,
     TableProps,
@@ -16,6 +17,7 @@ import { IUser } from '../../types';
 import { useAuthStore } from '../../store';
 import UsersFilter from './UsersFilter';
 import { useState } from 'react';
+import UserForm from './UserForm';
 
 const getAllUsers = async () => {
     try {
@@ -253,7 +255,9 @@ const User = () => {
                     </Space>
                 }
             >
-                <p>Form goes here</p>
+                <Form layout='vertical' requiredMark>
+                    <UserForm />
+                </Form>
             </Drawer>
         </>
     );
