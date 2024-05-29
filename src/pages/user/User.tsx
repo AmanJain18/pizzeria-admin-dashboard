@@ -4,11 +4,11 @@ import { RightOutlined } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
 import { getUsers } from '../../http/api';
 import { IUser } from '../../types';
-// import { AxiosError } from 'axios';
 
 const getAllUsers = async () => {
     try {
         const { data } = await getUsers();
+        console.log(data)
         return data;
     } catch (error) {
         return Promise.reject(error);
@@ -154,6 +154,23 @@ const User = () => {
                     </Tag>
                 );
             },
+        },
+        {
+            title: 'Created At',
+            dataIndex: 'createdAt',
+            key: 'createdAt',
+            render: (text: string) => new Date(text).toLocaleDateString(),
+        },
+        {
+            title: 'Restaurants',
+            dataIndex: 'tenant',
+            key: 'tenant',
+            render: (tenant) => {
+                if (tenant) {
+                    return tenant.name;
+                }
+                return 'N/A';
+            }
         },
     ];
 
