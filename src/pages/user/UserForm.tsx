@@ -30,7 +30,7 @@ const UserForm = () => {
                                     rules={[
                                         {
                                             required: true,
-                                            message: 'Please enter first name',
+                                            message: 'First name is required',
                                         },
                                     ]}
                                 >
@@ -47,7 +47,7 @@ const UserForm = () => {
                                     rules={[
                                         {
                                             required: true,
-                                            message: 'Please enter last name',
+                                            message: 'Last name is required',
                                         },
                                     ]}
                                 >
@@ -65,7 +65,7 @@ const UserForm = () => {
                                     rules={[
                                         {
                                             required: true,
-                                            message: 'Please enter email',
+                                            message: 'Email is required',
                                         },
                                         {
                                             type: 'email',
@@ -92,7 +92,7 @@ const UserForm = () => {
                                     rules={[
                                         {
                                             required: true,
-                                            message: 'Please enter password',
+                                            message: 'Password is required',
                                         },
                                         {
                                             min: 8,
