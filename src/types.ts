@@ -4,7 +4,7 @@ export interface ILoginCredentials {
     remember?: string;
 }
 
-interface Tenant {
+export interface ITenant {
     id: number;
     name: string;
     address: string;
@@ -16,5 +16,5 @@ export interface IUser {
     lastName: string;
     email: string;
     role: string;
-    tenant?: Tenant;
+    tenant?: ITenant;
 }

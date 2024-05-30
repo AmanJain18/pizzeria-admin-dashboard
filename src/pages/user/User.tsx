@@ -7,6 +7,7 @@ import {
     Table,
     TableProps,
     Tag,
+    theme,
 } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { Link, Navigate } from 'react-router-dom';
@@ -31,6 +32,9 @@ const getAllUsers = async () => {
 const User = () => {
     const { user } = useAuthStore();
     const [drawerOpen, setDrawerOpen] = useState(false);
+    const {
+        token: { colorBgLayout },
+    } = theme.useToken();
 
     const {
         data: userData,
@@ -38,7 +42,7 @@ const User = () => {
         isError,
         error,
     } = useQuery({
-        queryKey: ['getusers'],
+        queryKey: ['users'],
         queryFn: getAllUsers,
     });
 
@@ -242,6 +246,7 @@ const User = () => {
                 title='Create User'
                 placement='right'
                 size={'large'}
+                styles={{ body: { backgroundColor: colorBgLayout } }}
                 closable={true}
                 onClose={() => setDrawerOpen(false)}
                 open={drawerOpen}
@@ -255,7 +260,10 @@ const User = () => {
                     </Space>
                 }
             >
-                <Form layout='vertical' requiredMark>
+                <Form
+                    layout='vertical'
+                    autoComplete='off'
+                >
                     <UserForm />
                 </Form>
             </Drawer>
