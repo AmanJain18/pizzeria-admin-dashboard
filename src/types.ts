@@ -18,3 +18,11 @@ export interface IUser {
     role: string;
     tenant?: ITenant;
 }
+
+export type TCreateUser = {
+    firstName: string;
+    lastName: string;
+    email: string;
+    role: string;
+    tenantId: number;
+};

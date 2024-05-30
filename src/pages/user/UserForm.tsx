@@ -141,7 +141,7 @@ const UserForm = () => {
                             </Col>
                             <Col span={12}>
                                 <Form.Item
-                                    name='tenant'
+                                    name='tenantId'
                                     label='Restaurant'
                                     rules={[
                                         {

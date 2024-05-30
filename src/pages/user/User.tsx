@@ -7,14 +7,15 @@ import {
     Table,
     TableProps,
     Tag,
+    message,
     theme,
 } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
+import { PlusOutlined, SaveFilled } from '@ant-design/icons';
 import { Link, Navigate } from 'react-router-dom';
 import { RightOutlined } from '@ant-design/icons';
-import { useQuery } from '@tanstack/react-query';
-import { getUsers } from '../../http/api';
-import { IUser } from '../../types';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { getUsers, createUser } from '../../http/api';
+import { IUser, TCreateUser } from '../../types';
 import { useAuthStore } from '../../store';
 import UsersFilter from './UsersFilter';
 import { useState } from 'react';
@@ -29,8 +30,20 @@ const getAllUsers = async () => {
     }
 };
 
+const createNewUser = async (newUserData: TCreateUser) => {
+    try {
+        const { data } = await createUser(newUserData);
+        return data;
+    } catch (error) {
+        return Promise.reject(error);
+    }
+};
+
 const User = () => {
     const { user } = useAuthStore();
+    const [form] = Form.useForm();
+    const queryClient = useQueryClient();
+    const [messageApi, contextHolder] = message.useMessage();
     const [drawerOpen, setDrawerOpen] = useState(false);
     const {
         token: { colorBgLayout },
@@ -44,6 +57,24 @@ const User = () => {
     } = useQuery({
         queryKey: ['users'],
         queryFn: getAllUsers,
+    });
+
+    const { mutate: newUserMutate, isPending } = useMutation({
+        mutationKey: ['user'],
+        mutationFn: createNewUser,
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: ['users'] });
+            messageApi.open({
+                type: 'success',
+                content: 'New User Created!',
+            });
+        },
+        onError: async (error) => {
+            messageApi.open({
+                type: 'error',
+                content: error?.message,
+            });
+        },
     });
 
     if (!user || user.role !== 'admin') {
@@ -203,8 +234,19 @@ const User = () => {
         },
     ];
 
+    const handleSubmit = () => {
+        form.validateFields().then((values) => {
+            newUserMutate(values);
+            if (!isPending) {
+                form.resetFields();
+                setDrawerOpen(false);
+            }
+        });
+    };
+
     return (
         <>
+            {contextHolder}
             <Breadcrumb
                 separator={<RightOutlined />}
                 items={[
@@ -248,22 +290,34 @@ const User = () => {
                 size={'large'}
                 styles={{ body: { backgroundColor: colorBgLayout } }}
                 closable={true}
-                onClose={() => setDrawerOpen(false)}
+                onClose={() => {
+                    form.resetFields();
+                    setDrawerOpen(false);
+                }}
                 open={drawerOpen}
                 destroyOnClose={true}
                 extra={
                     <Space>
-                        <Button onClick={() => setDrawerOpen(false)}>
+                        <Button
+                            onClick={() => {
+                                form.resetFields();
+                                setDrawerOpen(false);
+                            }}
+                        >
                             Cancel
                         </Button>
-                        <Button type='primary'>OK</Button>
+                        <Button
+                            type='primary'
+                            icon={<SaveFilled />}
+                            onClick={handleSubmit}
+                            loading={isPending}
+                        >
+                            Create
+                        </Button>
                     </Space>
                 }
             >
-                <Form
-                    layout='vertical'
-                    autoComplete='off'
-                >
+                <Form layout='vertical' autoComplete='off' form={form}>
                     <UserForm />
                 </Form>
             </Drawer>
