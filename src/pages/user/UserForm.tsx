@@ -15,7 +15,7 @@ const getAllTenants = async () => {
 const UserForm = () => {
     const selectedRole = Form.useWatch('role');
     const { data: tenantData } = useQuery({
-        queryKey: ['tenants'],
+        queryKey: ['get-tenants'],
         queryFn: getAllTenants,
     });
     return (

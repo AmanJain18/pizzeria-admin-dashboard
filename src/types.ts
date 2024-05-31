@@ -26,3 +26,9 @@ export type TCreateUser = {
     role: string;
     tenantId: number;
 };
+
+export type FieldData = {
+    name: string[];
+    value?: string;
+    errors?: string[];
+};

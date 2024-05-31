@@ -23,7 +23,7 @@ import {
     useQueryClient,
 } from '@tanstack/react-query';
 import { getUsers, createUser } from '../../http/api';
-import { IUser, TCreateUser } from '../../types';
+import { FieldData, IUser, TCreateUser } from '../../types';
 import { useAuthStore } from '../../store';
 import UsersFilter from './UsersFilter';
 import { useState } from 'react';
@@ -51,6 +51,7 @@ const createNewUser = async (newUserData: TCreateUser) => {
 const User = () => {
     const { user } = useAuthStore();
     const [form] = Form.useForm();
+    const [filterForm] = Form.useForm();
     const queryClient = useQueryClient();
     const [messageApi, contextHolder] = message.useMessage();
     const [drawerOpen, setDrawerOpen] = useState(false);
@@ -68,10 +69,13 @@ const User = () => {
         isError,
         error,
     } = useQuery({
-        queryKey: ['users', queryParams],
+        queryKey: ['get-users', queryParams],
         queryFn: () => {
+            const filteredParams = Object.fromEntries(
+                Object.entries(queryParams).filter((item) => !!item[1]),
+            );
             const queryString = new URLSearchParams(
-                queryParams as unknown as Record<string, string>,
+                filteredParams as unknown as Record<string, string>,
             ).toString();
             return getAllUsers(queryString);
         },
@@ -82,7 +86,7 @@ const User = () => {
         mutationKey: ['user'],
         mutationFn: createNewUser,
         onSuccess: async () => {
-            await queryClient.invalidateQueries({ queryKey: ['users'] });
+            await queryClient.invalidateQueries({ queryKey: ['get-users'] });
             messageApi.open({
                 type: 'success',
                 content: 'New User Created!',
@@ -263,6 +267,22 @@ const User = () => {
         });
     };
 
+    const filterChange = (onFieldsChange: FieldData[]) => {
+        const fieldsValues = onFieldsChange
+            .map((field) => ({
+                [field.name[0]]: field.value,
+            }))
+            .reduce((acc, curr) => {
+                return { ...acc, ...curr };
+            }, {});
+
+        setQueryParams((prev) => ({
+            ...prev,
+            ...fieldsValues,
+            currentPage: 1,
+        }));
+    };
+
     return (
         <>
             {contextHolder}
@@ -287,19 +307,18 @@ const User = () => {
                     </Typography.Text>
                 )}
             </Flex>
-            <UsersFilter
-                onFilterChange={(filterName, filterValue) => {
-                    console.log(filterName, filterValue);
-                }}
-            >
-                <Button
-                    type='primary'
-                    icon={<PlusOutlined />}
-                    onClick={() => setDrawerOpen(true)}
-                >
-                    Add User
-                </Button>
-            </UsersFilter>
+
+            <Form form={filterForm} onFieldsChange={filterChange}>
+                <UsersFilter>
+                    <Button
+                        type='primary'
+                        icon={<PlusOutlined />}
+                        onClick={() => setDrawerOpen(true)}
+                    >
+                        Add User
+                    </Button>
+                </UsersFilter>
+            </Form>
 
             {userData && (
                 <Table

@@ -1,61 +1,62 @@
-import { Card, Col, Input, Row, Select } from 'antd';
+import { Card, Col, Form, Input, Row, Select } from 'antd';
 
 type UsersFilterProps = {
     children?: React.ReactNode;
-    onFilterChange: (filterName: string, filterValue: string) => void;
 };
-const UsersFilter = ({ onFilterChange, children }: UsersFilterProps) => {
+const UsersFilter = ({ children }: UsersFilterProps) => {
     return (
         <Card style={{ marginTop: '20px' }}>
             <Row gutter={8}>
                 <Col span={12}>
                     <Row gutter={16}>
                         <Col span={8}>
-                            <Input.Search
-                                placeholder='Search'
-                                allowClear={true}
-                                onChange={(e) =>
-                                    onFilterChange(
-                                        'searchQueryFilter',
-                                        e.target.value,
-                                    )
-                                }
-                            />
+                            <Form.Item name='q'>
+                                <Input.Search
+                                    placeholder='Search'
+                                    size='large'
+                                    style={{ width: '100%' }}
+                                    allowClear={true}
+                                />
+                            </Form.Item>
                         </Col>
                         <Col span={8}>
-                            <Select
-                                style={{ width: '100%' }}
-                                placeholder='Role'
-                                allowClear={true}
-                                onChange={(selectedItem) =>
-                                    onFilterChange('roleFilter', selectedItem)
-                                }
-                            >
-                                <Select.Option value='admin'>
-                                    Admin
-                                </Select.Option>
-                                <Select.Option value='manager'>
-                                    Manager
-                                </Select.Option>
-                                <Select.Option value='customer'>
-                                    Customer
-                                </Select.Option>
-                            </Select>
+                            <Form.Item name='role'>
+                                <Select
+                                    style={{ width: '100%' }}
+                                    size='large'
+                                    showSearch
+                                    placeholder='Role'
+                                    allowClear={true}
+                                >
+                                    <Select.Option value='admin'>
+                                        Admin
+                                    </Select.Option>
+                                    <Select.Option value='manager'>
+                                        Manager
+                                    </Select.Option>
+                                    <Select.Option value='customer'>
+                                        Customer
+                                    </Select.Option>
+                                </Select>
+                            </Form.Item>
                         </Col>
                         <Col span={8}>
-                            <Select
-                                style={{ width: '100%' }}
-                                placeholder='Status'
-                                allowClear={true}
-                                onChange={(selectedItem) =>
-                                    onFilterChange('statusFilter', selectedItem)
-                                }
-                            >
-                                <Select.Option value='ban'>Ban</Select.Option>
-                                <Select.Option value='active'>
-                                    Active
-                                </Select.Option>
-                            </Select>
+                            <Form.Item name='status'>
+                                <Select
+                                    style={{ width: '100%' }}
+                                    placeholder='Status'
+                                    size='large'
+                                    showSearch
+                                    allowClear={true}
+                                >
+                                    <Select.Option value='ban'>
+                                        Ban
+                                    </Select.Option>
+                                    <Select.Option value='active'>
+                                        Active
+                                    </Select.Option>
+                                </Select>
+                            </Form.Item>
                         </Col>
                     </Row>
                 </Col>
