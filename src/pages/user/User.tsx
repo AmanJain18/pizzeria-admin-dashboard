@@ -26,9 +26,10 @@ import { getUsers, createUser } from '../../http/api';
 import { FieldData, IUser, TCreateUser } from '../../types';
 import { useAuthStore } from '../../store';
 import UsersFilter from './UsersFilter';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import UserForm from './UserForm';
 import { PAGE_SIZE } from '../../constants';
+import { debounce } from 'lodash';
 
 const getAllUsers = async (queryString: string) => {
     try {
@@ -267,6 +268,13 @@ const User = () => {
         });
     };
 
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const debounceSearch = useMemo(() => {
+        return debounce((value: string | undefined) => {
+            setQueryParams((prev) => ({ ...prev, q: value }));
+        }, 500);
+    }, []);
+
     const filterChange = (onFieldsChange: FieldData[]) => {
         const fieldsValues = onFieldsChange
             .map((field) => ({
@@ -276,11 +284,15 @@ const User = () => {
                 return { ...acc, ...curr };
             }, {});
 
-        setQueryParams((prev) => ({
-            ...prev,
-            ...fieldsValues,
-            currentPage: 1,
-        }));
+        if ('q' in fieldsValues) {
+            debounceSearch(fieldsValues.q);
+        } else {
+            setQueryParams((prev) => ({
+                ...prev,
+                ...fieldsValues,
+                currentPage: 1,
+            }));
+        }
     };
 
     return (
