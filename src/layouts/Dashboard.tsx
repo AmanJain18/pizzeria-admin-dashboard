@@ -11,7 +11,7 @@ import {
     theme,
 } from 'antd';
 import type { MenuProps } from 'antd';
-import { Outlet, Navigate, NavLink } from 'react-router-dom';
+import { Outlet, Navigate, NavLink, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../store';
 import Logo from '../components/icons/Logo';
 import {
@@ -95,6 +95,7 @@ const avatarItems: MenuProps['items'] = [
 
 const Dashboard = () => {
     const { user, logoutUser } = useAuthStore();
+    const location = useLocation();
     const [collapsed, setCollapsed] = useState(false);
     const {
         token: { colorBgContainer, colorPrimary },
@@ -110,7 +111,12 @@ const Dashboard = () => {
     });
 
     if (user === null) {
-        return <Navigate to='/auth/login' replace={true} />;
+        return (
+            <Navigate
+                to={`/auth/login?redirect=${location.pathname}`}
+                replace={true}
+            />
+        );
     }
 
     const sidebarItems: MenuProps['items'] = getMenuItems(user.role);
