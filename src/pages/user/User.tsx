@@ -2,18 +2,26 @@ import {
     Breadcrumb,
     Button,
     Drawer,
+    Flex,
     Form,
     Space,
+    Spin,
     Table,
     TableProps,
     Tag,
+    Typography,
     message,
     theme,
 } from 'antd';
-import { PlusOutlined, SaveFilled } from '@ant-design/icons';
+import { PlusOutlined, SaveFilled, LoadingOutlined } from '@ant-design/icons';
 import { Link, Navigate } from 'react-router-dom';
 import { RightOutlined } from '@ant-design/icons';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+    keepPreviousData,
+    useMutation,
+    useQuery,
+    useQueryClient,
+} from '@tanstack/react-query';
 import { getUsers, createUser } from '../../http/api';
 import { IUser, TCreateUser } from '../../types';
 import { useAuthStore } from '../../store';
@@ -56,7 +64,7 @@ const User = () => {
 
     const {
         data: userData,
-        isLoading,
+        isFetching,
         isError,
         error,
     } = useQuery({
@@ -67,6 +75,7 @@ const User = () => {
             ).toString();
             return getAllUsers(queryString);
         },
+        placeholderData: keepPreviousData,
     });
 
     const { mutate: newUserMutate, isPending } = useMutation({
@@ -257,18 +266,27 @@ const User = () => {
     return (
         <>
             {contextHolder}
-            <Breadcrumb
-                separator={<RightOutlined />}
-                items={[
-                    {
-                        title: <Link to='/'>Home</Link>,
-                    },
-                    {
-                        title: <Link to='/users'>Users</Link>,
-                    },
-                ]}
-            />
-
+            <Flex justify='space-between'>
+                <Breadcrumb
+                    separator={<RightOutlined />}
+                    items={[
+                        {
+                            title: <Link to='/'>Home</Link>,
+                        },
+                        {
+                            title: <Link to='/users'>Users</Link>,
+                        },
+                    ]}
+                />
+                {isFetching && (
+                    <Spin size='default' indicator={<LoadingOutlined />} />
+                )}
+                {isError && (
+                    <Typography.Text type='danger'>
+                        {error.message}
+                    </Typography.Text>
+                )}
+            </Flex>
             <UsersFilter
                 onFilterChange={(filterName, filterValue) => {
                     console.log(filterName, filterValue);
@@ -283,8 +301,6 @@ const User = () => {
                 </Button>
             </UsersFilter>
 
-            {isLoading && <p>Loading...</p>}
-            {isError && <p>Error: {error as unknown as string}</p>}
             {userData && (
                 <Table
                     columns={columns}
