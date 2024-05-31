@@ -61,15 +61,6 @@ const getMenuItems = (role: string) => {
             path: '/products',
         },
         {
-            key: '/restaurants',
-            priority: 5,
-            icon: (
-                <Icon component={MdRestaurant} style={{ fontSize: '20px' }} />
-            ),
-            label: <NavLink to='/restaurants'>Restaurants</NavLink>,
-            path: '/restaurants',
-        },
-        {
             key: '/promos',
             priority: 6,
             icon: <Icon component={MdDiscount} style={{ fontSize: '20px' }} />,
@@ -89,6 +80,18 @@ const getMenuItems = (role: string) => {
                 ),
                 label: <NavLink to='/users'>Users</NavLink>,
                 path: '/users',
+            },
+            {
+                key: '/restaurants',
+                priority: 5,
+                icon: (
+                    <Icon
+                        component={MdRestaurant}
+                        style={{ fontSize: '20px' }}
+                    />
+                ),
+                label: <NavLink to='/restaurants'>Restaurants</NavLink>,
+                path: '/restaurants',
             },
         ].sort((a, b) => a.priority - b.priority);
     }
