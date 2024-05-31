@@ -349,8 +349,10 @@ const User = () => {
                             }));
                         },
                         position: ['bottomCenter'],
+                        showTotal: (total: number, range: number[]) =>
+                            `Showing ${range[0]}-${range[1]} of ${total} items`,
                     }}
-                    style={{ marginTop: '20px' }}
+                    style={{ marginTop: '20px', textAlignLast: 'center' }}
                     rowKey={'id'}
                     size='middle'
                 />
