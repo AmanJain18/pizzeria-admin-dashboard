@@ -31,12 +31,14 @@ const { Header, Content, Footer, Sider } = Layout;
 const getMenuItems = (role: string) => {
     const baseItems = [
         {
-            key: 1,
+            key: '/',
+            priority: 1,
             icon: <Icon component={MdHome} style={{ fontSize: '20px' }} />,
             label: <NavLink to='/'>Home</NavLink>,
         },
         {
-            key: 2,
+            key: '/orders',
+            priority: 2,
             icon: (
                 <Icon
                     component={FaClipboardList}
@@ -44,9 +46,11 @@ const getMenuItems = (role: string) => {
                 />
             ),
             label: <NavLink to='/orders'>Orders</NavLink>,
+            path: '/orders',
         },
         {
-            key: 3,
+            key: '/products',
+            priority: 3,
             icon: (
                 <Icon
                     component={MdShoppingBasket}
@@ -54,18 +58,23 @@ const getMenuItems = (role: string) => {
                 />
             ),
             label: <NavLink to='/products'>Products</NavLink>,
+            path: '/products',
         },
         {
-            key: 5,
+            key: '/restaurants',
+            priority: 5,
             icon: (
                 <Icon component={MdRestaurant} style={{ fontSize: '20px' }} />
             ),
             label: <NavLink to='/restaurants'>Restaurants</NavLink>,
+            path: '/restaurants',
         },
         {
-            key: 6,
+            key: '/promos',
+            priority: 6,
             icon: <Icon component={MdDiscount} style={{ fontSize: '20px' }} />,
             label: 'Promos',
+            path: '/promos',
         },
     ];
 
@@ -73,16 +82,18 @@ const getMenuItems = (role: string) => {
         return [
             ...baseItems,
             {
-                key: 4,
+                key: '/users',
+                priority: 4,
                 icon: (
                     <Icon component={MdPeople} style={{ fontSize: '20px' }} />
                 ),
                 label: <NavLink to='/users'>Users</NavLink>,
+                path: '/users',
             },
-        ].sort((a, b) => a.key - b.key);
+        ].sort((a, b) => a.priority - b.priority);
     }
 
-    return baseItems.sort((a, b) => a.key - b.key);
+    return baseItems.sort((a, b) => a.priority - b.priority);
 };
 
 const avatarItems: MenuProps['items'] = [
@@ -134,7 +145,7 @@ const Dashboard = () => {
                 </div>
                 <Menu
                     theme='light'
-                    defaultSelectedKeys={['1']}
+                    defaultSelectedKeys={[location.pathname]}
                     mode='inline'
                     items={sidebarItems}
                 />
