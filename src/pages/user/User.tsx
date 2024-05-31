@@ -30,6 +30,7 @@ import { useState, useMemo } from 'react';
 import UserForm from './UserForm';
 import { PAGE_SIZE } from '../../constants';
 import { debounce } from 'lodash';
+import { formatDate } from 'date-fns';
 
 const getAllUsers = async (queryString: string) => {
     try {
@@ -240,12 +241,6 @@ const User = () => {
             },
         },
         {
-            title: 'Created At',
-            dataIndex: 'createdAt',
-            key: 'createdAt',
-            render: (text: string) => new Date(text).toLocaleDateString(),
-        },
-        {
             title: 'Restaurants',
             dataIndex: 'tenant',
             key: 'tenant',
@@ -255,6 +250,13 @@ const User = () => {
                 }
                 return 'N/A';
             },
+        },
+        {
+            title: 'Created At',
+            dataIndex: 'createdAt',
+            key: 'createdAt',
+            render: (text: string) =>
+                formatDate(new Date(text), 'E dd MMM, yyyy'),
         },
     ];
 
