@@ -13,6 +13,7 @@ const getAllTenants = async () => {
 };
 
 const UserForm = () => {
+    const selectedRole = Form.useWatch('role');
     const { data: tenantData } = useQuery({
         queryKey: ['tenants'],
         queryFn: getAllTenants,
@@ -133,40 +134,42 @@ const UserForm = () => {
                                         <Select.Option value='manager'>
                                             Manager
                                         </Select.Option>
-                                        <Select.Option value='customer'>
-                                            Customer
-                                        </Select.Option>
                                     </Select>
                                 </Form.Item>
                             </Col>
-                            <Col span={12}>
-                                <Form.Item
-                                    name='tenantId'
-                                    label='Restaurant'
-                                    rules={[
-                                        {
-                                            required: true,
-                                            message: 'Please select restaurant',
-                                        },
-                                    ]}
-                                >
-                                    <Select
-                                        placeholder='Select Restaurant'
-                                        size='large'
-                                        allowClear
-                                        onChange={() => {}}
+                            {selectedRole === 'manager' && (
+                                <Col span={12}>
+                                    <Form.Item
+                                        name='tenantId'
+                                        label='Restaurant'
+                                        rules={[
+                                            {
+                                                required: true,
+                                                message:
+                                                    'Please select restaurant',
+                                            },
+                                        ]}
                                     >
-                                        {tenantData?.map((tenant: ITenant) => (
-                                            <Select.Option
-                                                key={tenant.id}
-                                                value={tenant.id}
-                                            >
-                                                {tenant.name}
-                                            </Select.Option>
-                                        ))}
-                                    </Select>
-                                </Form.Item>
-                            </Col>
+                                        <Select
+                                            placeholder='Select Restaurant'
+                                            size='large'
+                                            allowClear
+                                            onChange={() => {}}
+                                        >
+                                            {tenantData?.map(
+                                                (tenant: ITenant) => (
+                                                    <Select.Option
+                                                        key={tenant.id}
+                                                        value={tenant.id}
+                                                    >
+                                                        {tenant.name}
+                                                    </Select.Option>
+                                                ),
+                                            )}
+                                        </Select>
+                                    </Form.Item>
+                                </Col>
+                            )}
                         </Row>
                     </Card>
                 </Space>
