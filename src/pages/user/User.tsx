@@ -20,10 +20,11 @@ import { useAuthStore } from '../../store';
 import UsersFilter from './UsersFilter';
 import { useState } from 'react';
 import UserForm from './UserForm';
+import { PAGE_SIZE } from '../../constants';
 
-const getAllUsers = async () => {
+const getAllUsers = async (queryString: string) => {
     try {
-        const { data } = await getUsers();
+        const { data } = await getUsers(queryString);
         return data;
     } catch (error) {
         return Promise.reject(error);
@@ -45,6 +46,10 @@ const User = () => {
     const queryClient = useQueryClient();
     const [messageApi, contextHolder] = message.useMessage();
     const [drawerOpen, setDrawerOpen] = useState(false);
+    const [queryParams, setQueryParams] = useState({
+        currentPage: 1,
+        pageSize: PAGE_SIZE,
+    });
     const {
         token: { colorBgLayout },
     } = theme.useToken();
@@ -55,8 +60,13 @@ const User = () => {
         isError,
         error,
     } = useQuery({
-        queryKey: ['users'],
-        queryFn: getAllUsers,
+        queryKey: ['users', queryParams],
+        queryFn: () => {
+            const queryString = new URLSearchParams(
+                queryParams as unknown as Record<string, string>,
+            ).toString();
+            return getAllUsers(queryString);
+        },
     });
 
     const { mutate: newUserMutate, isPending } = useMutation({
@@ -278,9 +288,22 @@ const User = () => {
             {userData && (
                 <Table
                     columns={columns}
-                    dataSource={userData}
+                    dataSource={userData?.data}
+                    pagination={{
+                        pageSize: queryParams.pageSize,
+                        current: queryParams.currentPage,
+                        total: userData?.totalCount,
+                        onChange: (page) => {
+                            setQueryParams((prev) => ({
+                                ...prev,
+                                currentPage: page,
+                            }));
+                        },
+                        position: ['bottomCenter'],
+                    }}
                     style={{ marginTop: '20px' }}
                     rowKey={'id'}
+                    size='middle'
                 />
             )}
 

@@ -7,7 +7,7 @@ export const self = async () => api.get('/auth/self');
 export const logout = async () => api.post('/auth/logout');
 
 // Users
-export const getUsers = async () => api.get('/users');
+export const getUsers = async (queryString: string) => api.get(`/users?${queryString}`);
 export const createUser = async (data: TCreateUser) => api.post('/users', data);    
 
 // Tenants
