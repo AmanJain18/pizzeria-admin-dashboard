@@ -23,8 +23,17 @@ export type TCreateUser = {
     firstName: string;
     lastName: string;
     email: string;
+    password: string;
     role: string;
-    tenantId: number;
+    tenantId: number | null;
+};
+
+export type TUpdateUser = {
+    firstName: string;
+    lastName: string;
+    email: string;
+    role: string;
+    tenantId: number | null;
 };
 
 export type FieldData = {

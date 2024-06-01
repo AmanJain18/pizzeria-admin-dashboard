@@ -12,7 +12,7 @@ const getAllTenants = async () => {
     }
 };
 
-const UserForm = () => {
+const UserForm = ({ inEditMode = false }: { inEditMode: boolean }) => {
     const selectedRole = Form.useWatch('role');
     const { data: tenantData } = useQuery({
         queryKey: ['get-tenants'],
@@ -83,33 +83,36 @@ const UserForm = () => {
                             </Col>
                         </Row>
                     </Card>
-                    <Card title='Security Info' bordered={false}>
-                        <Row gutter={16}>
-                            <Col span={12}>
-                                <Form.Item
-                                    name='password'
-                                    label='Password'
-                                    hasFeedback
-                                    rules={[
-                                        {
-                                            required: true,
-                                            message: 'Password is required',
-                                        },
-                                        {
-                                            min: 8,
-                                            message: 'At least 8 characters',
-                                        },
-                                    ]}
-                                >
-                                    <Input.Password
-                                        placeholder='Please enter password'
-                                        size='large'
-                                        allowClear
-                                    />
-                                </Form.Item>
-                            </Col>
-                        </Row>
-                    </Card>
+                    {!inEditMode && (
+                        <Card title='Security Info' bordered={false}>
+                            <Row gutter={16}>
+                                <Col span={12}>
+                                    <Form.Item
+                                        name='password'
+                                        label='Password'
+                                        hasFeedback
+                                        rules={[
+                                            {
+                                                required: true,
+                                                message: 'Password is required',
+                                            },
+                                            {
+                                                min: 8,
+                                                message:
+                                                    'At least 8 characters',
+                                            },
+                                        ]}
+                                    >
+                                        <Input.Password
+                                            placeholder='Please enter password'
+                                            size='large'
+                                            allowClear
+                                        />
+                                    </Form.Item>
+                                </Col>
+                            </Row>
+                        </Card>
+                    )}
                     <Card title='Role Info' bordered={false}>
                         <Row gutter={16}>
                             <Col span={12}>
@@ -127,6 +130,7 @@ const UserForm = () => {
                                         placeholder='Select Role'
                                         size='large'
                                         allowClear
+                                        id='form-role'
                                     >
                                         <Select.Option value='admin'>
                                             Admin

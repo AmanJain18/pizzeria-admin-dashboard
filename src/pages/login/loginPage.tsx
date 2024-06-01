@@ -98,7 +98,7 @@ const LoginPage = () => {
                 content: 'You do not have permission to access this page!',
             });
             logoutUser();
-            return
+            return;
         },
     });
 

@@ -22,11 +22,11 @@ import {
     useQuery,
     useQueryClient,
 } from '@tanstack/react-query';
-import { getUsers, createUser } from '../../http/api';
-import { FieldData, IUser, TCreateUser } from '../../types';
+import { getUsers, createUser, updateUser } from '../../http/api';
+import { FieldData, IUser, TCreateUser, TUpdateUser } from '../../types';
 import { useAuthStore } from '../../store';
 import UsersFilter from './UsersFilter';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import UserForm from './UserForm';
 import { PAGE_SIZE } from '../../constants';
 import { debounce } from 'lodash';
@@ -50,6 +50,18 @@ const createNewUser = async (newUserData: TCreateUser) => {
     }
 };
 
+const updateSelectedUser = async (
+    updateUserData: TUpdateUser,
+    userId: number,
+) => {
+    try {
+        const { data } = await updateUser(updateUserData, userId);
+        return data;
+    } catch (error) {
+        return Promise.reject(error);
+    }
+};
+
 const User = () => {
     const { user } = useAuthStore();
     const [form] = Form.useForm();
@@ -57,6 +69,7 @@ const User = () => {
     const queryClient = useQueryClient();
     const [messageApi, contextHolder] = message.useMessage();
     const [drawerOpen, setDrawerOpen] = useState(false);
+    const [selectedRowUser, setSelectedRowUser] = useState<IUser | null>(null);
     const [queryParams, setQueryParams] = useState({
         currentPage: 1,
         pageSize: PAGE_SIZE,
@@ -64,6 +77,16 @@ const User = () => {
     const {
         token: { colorBgLayout },
     } = theme.useToken();
+
+    useEffect(() => {
+        if (selectedRowUser) {
+            form.setFieldsValue({
+                ...selectedRowUser,
+                tenantId: selectedRowUser.tenant?.id,
+            });
+            setDrawerOpen(true);
+        }
+    }, [selectedRowUser, form]);
 
     const {
         data: userData,
@@ -84,7 +107,7 @@ const User = () => {
         placeholderData: keepPreviousData,
     });
 
-    const { mutate: newUserMutate, isPending } = useMutation({
+    const { mutate: createUserMutation, isPending } = useMutation({
         mutationKey: ['user'],
         mutationFn: createNewUser,
         onSuccess: async () => {
@@ -93,12 +116,41 @@ const User = () => {
                 type: 'success',
                 content: 'New User Created!',
             });
+            form.resetFields();
+            setDrawerOpen(false);
+            setSelectedRowUser(null);
         },
         onError: async (error) => {
             messageApi.open({
                 type: 'error',
                 content: error?.message,
             });
+        },
+    });
+
+    const { mutate: updateUserMutation } = useMutation({
+        mutationKey: ['update-user'],
+        mutationFn: (data: TUpdateUser) => {
+            return updateSelectedUser(data, selectedRowUser!.id);
+        },
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({
+                queryKey: ['get-users'],
+            });
+            messageApi.open({
+                type: 'success',
+                content: 'User Updated!',
+            });
+            form.resetFields();
+            setDrawerOpen(false);
+            setSelectedRowUser(null);
+        },
+        onError: async (error) => {
+            messageApi.open({
+                type: 'error',
+                content: error?.message,
+            });
+            console.log(error);
         },
     });
 
@@ -260,14 +312,15 @@ const User = () => {
         },
     ];
 
-    const handleSubmit = () => {
-        form.validateFields().then((values) => {
-            newUserMutate(values);
-            if (!isPending) {
-                form.resetFields();
-                setDrawerOpen(false);
-            }
-        });
+    const handleSubmit = async () => {
+        await form.validateFields();
+        const inEditMode = !!selectedRowUser;
+        if (inEditMode) {
+            console.log(form.getFieldsValue());
+            updateUserMutation(form.getFieldsValue());
+        } else {
+            createUserMutation(form.getFieldsValue());
+        }
     };
 
     // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -336,7 +389,26 @@ const User = () => {
 
             {userData && (
                 <Table
-                    columns={columns}
+                    columns={[
+                        ...columns,
+                        {
+                            title: 'Action',
+                            key: 'action',
+                            render: (record: IUser) => (
+                                <Space size='large'>
+                                    <Button
+                                        type='link'
+                                        onClick={() => {
+                                            setSelectedRowUser(record);
+                                        }}
+                                    >
+                                        Edit
+                                    </Button>
+                                    <Button type='link'>Delete</Button>
+                                </Space>
+                            ),
+                        },
+                    ]}
                     dataSource={userData?.data}
                     pagination={{
                         pageSize: queryParams.pageSize,
@@ -359,7 +431,7 @@ const User = () => {
             )}
 
             <Drawer
-                title='Create User'
+                title={selectedRowUser ? 'Edit User' : 'Create New User'}
                 placement='right'
                 size={'large'}
                 styles={{ body: { backgroundColor: colorBgLayout } }}
@@ -367,6 +439,7 @@ const User = () => {
                 onClose={() => {
                     form.resetFields();
                     setDrawerOpen(false);
+                    setSelectedRowUser(null);
                 }}
                 open={drawerOpen}
                 destroyOnClose={true}
@@ -376,6 +449,7 @@ const User = () => {
                             onClick={() => {
                                 form.resetFields();
                                 setDrawerOpen(false);
+                                setSelectedRowUser(null);
                             }}
                         >
                             Cancel
@@ -386,13 +460,13 @@ const User = () => {
                             onClick={handleSubmit}
                             loading={isPending}
                         >
-                            Create
+                            {selectedRowUser ? 'Update' : 'Create'}
                         </Button>
                     </Space>
                 }
             >
                 <Form layout='vertical' autoComplete='off' form={form}>
-                    <UserForm />
+                    <UserForm inEditMode={!!selectedRowUser} />
                 </Form>
             </Drawer>
         </>
