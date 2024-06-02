@@ -8,7 +8,6 @@ import {
     Spin,
     Table,
     TableProps,
-    Tag,
     Typography,
     message,
     theme,
@@ -22,54 +21,84 @@ import {
     useQuery,
     useQueryClient,
 } from '@tanstack/react-query';
-import { getUsers, createUser, updateUser } from '../../http/api';
-import { FieldData, IUser, TCreateUser, TUpdateUser } from '../../types';
+import { getTenants, createTenant, updateTenant } from '../../http/api';
+import { FieldData, ITenant, TTenantData } from '../../types';
 import { useAuthStore } from '../../store';
-import UsersFilter from './UsersFilter';
+import RestaurantFilter from './TenantsFilter';
 import { useState, useMemo, useEffect } from 'react';
-import UserForm from './forms/UserForm';
+import RestaurantForm from './forms/TenantForm';
 import { PAGE_SIZE } from '../../constants';
 import { debounce } from 'lodash';
 import { formatDate } from 'date-fns';
 import axios from 'axios';
 
-const getAllUsers = async (queryString: string) => {
+const columns: TableProps<ITenant>['columns'] = [
+    {
+        title: 'Id',
+        dataIndex: 'id',
+        key: 'id',
+        sortDirections: ['ascend', 'descend', 'ascend'],
+        sorter: {
+            compare: (a, b) => a.id - b.id,
+        },
+    },
+    {
+        title: 'Name',
+        dataIndex: 'name',
+        key: 'name',
+    },
+    {
+        title: 'Address',
+        dataIndex: 'address',
+        key: 'address',
+    },
+    {
+        title: 'Created At',
+        dataIndex: 'createdAt',
+        key: 'createdAt',
+        render: (text: string) => formatDate(new Date(text), 'E dd MMM, yyyy'),
+    },
+];
+
+const getAllTenants = async (queryString: string) => {
     try {
-        const { data } = await getUsers(queryString);
+        const { data } = await getTenants(queryString);
         return data;
     } catch (error) {
         return Promise.reject(error);
     }
 };
 
-const createNewUser = async (newUserData: TCreateUser) => {
+const createNewTenant = async (newTenantData: TTenantData) => {
     try {
-        const { data } = await createUser(newUserData);
+        const { data } = await createTenant(newTenantData);
         return data;
     } catch (error) {
         return Promise.reject(error);
     }
 };
 
-const updateSelectedUser = async (
-    updateUserData: TUpdateUser,
-    userId: number,
+const updateSelectedTenant = async (
+    updateTenantData: TTenantData,
+    tenantId: number,
 ) => {
     try {
-        const { data } = await updateUser(updateUserData, userId);
+        const { data } = await updateTenant(updateTenantData, tenantId);
         return data;
     } catch (error) {
         return Promise.reject(error);
     }
 };
 
-const Users = () => {
+const Tenants = () => {
     const { user } = useAuthStore();
     const [form] = Form.useForm();
     const [filterForm] = Form.useForm();
     const queryClient = useQueryClient();
     const [drawerOpen, setDrawerOpen] = useState(false);
-    const [selectedRowUser, setSelectedRowUser] = useState<IUser | null>(null);
+    const [selectedRowTenant, setSelectedRowTenant] = useState<ITenant | null>(
+        null,
+    );
     const [queryParams, setQueryParams] = useState({
         currentPage: 1,
         pageSize: PAGE_SIZE,
@@ -79,22 +108,19 @@ const Users = () => {
     } = theme.useToken();
 
     useEffect(() => {
-        if (selectedRowUser) {
-            form.setFieldsValue({
-                ...selectedRowUser,
-                tenantId: selectedRowUser.tenant?.id,
-            });
+        if (selectedRowTenant) {
+            form.setFieldsValue(selectedRowTenant);
             setDrawerOpen(true);
         }
-    }, [selectedRowUser, form]);
+    }, [selectedRowTenant, form]);
 
     const {
-        data: userData,
+        data: tenantsData,
         isFetching,
         isError,
         error,
     } = useQuery({
-        queryKey: ['get-users', queryParams],
+        queryKey: ['get-tenants', queryParams],
         queryFn: () => {
             const filteredParams = Object.fromEntries(
                 Object.entries(queryParams).filter((item) => !!item[1]),
@@ -102,20 +128,21 @@ const Users = () => {
             const queryString = new URLSearchParams(
                 filteredParams as unknown as Record<string, string>,
             ).toString();
-            return getAllUsers(queryString);
+            return getAllTenants(queryString);
         },
         placeholderData: keepPreviousData,
     });
 
-    const { mutate: createUserMutation, isPending } = useMutation({
-        mutationKey: ['user'],
-        mutationFn: createNewUser,
+    const { mutate: createTenantMutation, isPending } = useMutation({
+        mutationKey: ['tenant'],
+        mutationFn: createNewTenant,
         onSuccess: async () => {
-            await queryClient.invalidateQueries({ queryKey: ['get-users'] });
-            message.success('New User Created!');
+            await queryClient.invalidateQueries({ queryKey: ['get-tenants'] });
+            message.success('New Tenant Created!');
             form.resetFields();
             setDrawerOpen(false);
-            setSelectedRowUser(null);
+            setSelectedRowTenant(null);
+            return;
         },
         onError: async (error) => {
             if (axios.isAxiosError(error)) {
@@ -126,22 +153,24 @@ const Users = () => {
             } else {
                 message.error(error?.message || 'An unexpected error occurred');
             }
+            return;
         },
     });
 
-    const { mutate: updateUserMutation } = useMutation({
-        mutationKey: ['update-user'],
-        mutationFn: (data: TUpdateUser) => {
-            return updateSelectedUser(data, selectedRowUser!.id);
+    const { mutate: updateTenantMutation } = useMutation({
+        mutationKey: ['update-tenant'],
+        mutationFn: (data: TTenantData) => {
+            return updateSelectedTenant(data, selectedRowTenant!.id);
         },
         onSuccess: async () => {
             await queryClient.invalidateQueries({
-                queryKey: ['get-users'],
+                queryKey: ['get-tenants'],
             });
-            message.success('User Updated!');
+            message.success('Tenant Updated!');
             form.resetFields();
             setDrawerOpen(false);
-            setSelectedRowUser(null);
+            setSelectedRowTenant(null);
+            return;
         },
         onError: async (error) => {
             if (axios.isAxiosError(error)) {
@@ -149,10 +178,10 @@ const Users = () => {
                     error.response?.data.errors?.[0]?.msg ||
                     'An unexpected error occurred';
                 message.error(errorMessage);
-                return;
             } else {
                 message.error(error?.message || 'An unexpected error occurred');
             }
+            return;
         },
     });
 
@@ -161,167 +190,13 @@ const Users = () => {
         return <Navigate to='/' replace={true} />;
     }
 
-    const columns: TableProps<IUser>['columns'] = [
-        {
-            title: 'Id',
-            dataIndex: 'id',
-            key: 'id',
-            render: (text: number) => <Link to={`/users/${text}`}>{text}</Link>,
-            sortDirections: ['ascend', 'descend', 'ascend'],
-            sorter: {
-                compare: (a, b) => a.id - b.id,
-            },
-        },
-        {
-            title: 'Name',
-            dataIndex: 'firstName',
-            key: 'firstName',
-            render: (_, { firstName, lastName }) => {
-                return `${firstName} ${lastName}`;
-            },
-        },
-        {
-            title: 'Email',
-            dataIndex: 'email',
-            key: 'email',
-        },
-        {
-            title: 'Role',
-            key: 'role',
-            dataIndex: 'role',
-            filters: [
-                {
-                    text: 'Admin',
-                    value: 'admin',
-                },
-                {
-                    text: 'Manager',
-                    value: 'manager',
-                },
-                {
-                    text: 'Customer',
-                    value: 'customer',
-                },
-            ],
-            onFilter: (value, record) =>
-                record.role.indexOf(value as string) === 0,
-            filterDropdown: ({ setSelectedKeys, confirm, clearFilters }) => (
-                <div style={{ padding: 8 }}>
-                    <Tag
-                        key={'customer'}
-                        color='blue'
-                        onClick={() => {
-                            setSelectedKeys(['customer']);
-                            confirm();
-                        }}
-                        style={{
-                            cursor: 'pointer',
-                            marginBottom: 8,
-                            borderRadius: '12px',
-                        }}
-                    >
-                        Customer
-                    </Tag>
-                    <Tag
-                        key={'admin'}
-                        color='green'
-                        onClick={() => {
-                            setSelectedKeys(['admin']);
-                            confirm();
-                        }}
-                        style={{
-                            cursor: 'pointer',
-                            marginBottom: 8,
-                            borderRadius: '12px',
-                        }}
-                    >
-                        Admin
-                    </Tag>
-                    <Tag
-                        key={'manager'}
-                        color='purple'
-                        onClick={() => {
-                            setSelectedKeys(['manager']);
-                            confirm();
-                        }}
-                        style={{
-                            cursor: 'pointer',
-                            marginBottom: 8,
-                            borderRadius: '12px',
-                        }}
-                    >
-                        Manager
-                    </Tag>
-                    <Tag
-                        key={'clear'}
-                        color='red'
-                        onClick={() => {
-                            clearFilters?.();
-                            confirm();
-                        }}
-                        style={{
-                            cursor: 'pointer',
-                            marginBottom: 8,
-                            borderRadius: '12px',
-                        }}
-                    >
-                        Clear
-                    </Tag>
-                </div>
-            ),
-            render: (_, { role }) => {
-                let color;
-                if (role === 'admin') {
-                    color = 'green';
-                } else if (role === 'customer') {
-                    color = 'blue';
-                } else {
-                    color = 'purple';
-                }
-                return (
-                    <Tag
-                        color={color}
-                        key={role}
-                        style={{
-                            textTransform: 'capitalize',
-                            borderRadius: '12px',
-                            padding: '4px',
-                            width: '80px',
-                            textAlign: 'center',
-                        }}
-                    >
-                        {role}
-                    </Tag>
-                );
-            },
-        },
-        {
-            title: 'Restaurants',
-            dataIndex: 'tenant',
-            key: 'tenant',
-            render: (tenant) => {
-                if (tenant) {
-                    return tenant.name;
-                }
-                return 'N/A';
-            },
-        },
-        {
-            title: 'Created At',
-            dataIndex: 'createdAt',
-            key: 'createdAt',
-            render: (text: string) =>
-                formatDate(new Date(text), 'E dd MMM, yyyy'),
-        },
-    ];
-
     const handleSubmit = async () => {
         await form.validateFields();
-        const inEditMode = !!selectedRowUser;
+        const inEditMode = !!selectedRowTenant;
         if (inEditMode) {
-            updateUserMutation(form.getFieldsValue());
+            updateTenantMutation(form.getFieldsValue());
         } else {
-            createUserMutation(form.getFieldsValue());
+            createTenantMutation(form.getFieldsValue());
         }
     };
 
@@ -362,7 +237,7 @@ const Users = () => {
                             title: <Link to='/'>Home</Link>,
                         },
                         {
-                            title: <Link to='/users'>Users</Link>,
+                            title: <Link to='/restaurants'>Tenants</Link>,
                         },
                     ]}
                 />
@@ -377,30 +252,30 @@ const Users = () => {
             </Flex>
 
             <Form form={filterForm} onFieldsChange={filterChange}>
-                <UsersFilter>
+                <RestaurantFilter>
                     <Button
                         type='primary'
                         icon={<PlusOutlined />}
                         onClick={() => setDrawerOpen(true)}
                     >
-                        Add User
+                        Add Tenant
                     </Button>
-                </UsersFilter>
+                </RestaurantFilter>
             </Form>
 
-            {userData && (
+            {tenantsData && (
                 <Table
                     columns={[
                         ...columns,
                         {
                             title: 'Action',
                             key: 'action',
-                            render: (record: IUser) => (
+                            render: (record: ITenant) => (
                                 <Space size='large'>
                                     <Button
                                         type='link'
                                         onClick={() => {
-                                            setSelectedRowUser(record);
+                                            setSelectedRowTenant(record);
                                         }}
                                     >
                                         Edit
@@ -410,11 +285,11 @@ const Users = () => {
                             ),
                         },
                     ]}
-                    dataSource={userData?.data}
+                    dataSource={tenantsData?.data}
                     pagination={{
                         pageSize: queryParams.pageSize,
                         current: queryParams.currentPage,
-                        total: userData?.total,
+                        total: tenantsData?.total,
                         onChange: (page) => {
                             setQueryParams((prev) => ({
                                 ...prev,
@@ -423,7 +298,7 @@ const Users = () => {
                         },
                         position: ['bottomCenter'],
                         showTotal: (total: number, range: number[]) =>
-                            `Showing ${range[0]}-${range[1]} of ${total} items`,
+                            `Showing ${range[0]} - ${range[1]} of ${total} items`,
                     }}
                     style={{ marginTop: '20px', textAlignLast: 'center' }}
                     rowKey={'id'}
@@ -432,7 +307,7 @@ const Users = () => {
             )}
 
             <Drawer
-                title={selectedRowUser ? 'Edit User' : 'Create New User'}
+                title={selectedRowTenant ? 'Edit Tenant' : 'Create New Tenant'}
                 placement='right'
                 size={'large'}
                 styles={{ body: { backgroundColor: colorBgLayout } }}
@@ -440,7 +315,7 @@ const Users = () => {
                 onClose={() => {
                     form.resetFields();
                     setDrawerOpen(false);
-                    setSelectedRowUser(null);
+                    setSelectedRowTenant(null);
                 }}
                 open={drawerOpen}
                 destroyOnClose={true}
@@ -450,7 +325,7 @@ const Users = () => {
                             onClick={() => {
                                 form.resetFields();
                                 setDrawerOpen(false);
-                                setSelectedRowUser(null);
+                                setSelectedRowTenant(null);
                             }}
                         >
                             Cancel
@@ -461,17 +336,17 @@ const Users = () => {
                             onClick={handleSubmit}
                             loading={isPending}
                         >
-                            {selectedRowUser ? 'Update' : 'Create'}
+                            {selectedRowTenant ? 'Update' : 'Create'}
                         </Button>
                     </Space>
                 }
             >
                 <Form layout='vertical' autoComplete='off' form={form}>
-                    <UserForm inEditMode={!!selectedRowUser} />
+                    <RestaurantForm />
                 </Form>
             </Drawer>
         </>
     );
 };
 
-export default Users;
+export default Tenants;

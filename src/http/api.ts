@@ -1,4 +1,9 @@
-import { TCreateUser, ILoginCredentials, TUpdateUser } from '../types';
+import {
+    TCreateUser,
+    ILoginCredentials,
+    TUpdateUser,
+    TTenantData,
+} from '../types';
 import api from './client';
 
 // Auth
@@ -15,4 +20,9 @@ export const updateUser = async (data: TUpdateUser, userId: number) =>
     api.patch(`/users/${userId}`, data);
 
 // Tenants
-export const getTenants = async () => api.get('/tenants');
+export const getTenants = async (queryString: string) =>
+    api.get(`/tenants?${queryString}`);
+export const createTenant = async (data: TTenantData) =>
+    api.post('/tenants', data);
+export const updateTenant = async (data: TTenantData, userId: number) =>
+    api.patch(`/tenants/${userId}`, data);

@@ -39,5 +39,9 @@ export type TUpdateUser = {
 export type FieldData = {
     name: string[];
     value?: string;
-    errors?: string[];
+};
+
+export type TTenantData = {
+    name: string;
+    address: string;
 };
