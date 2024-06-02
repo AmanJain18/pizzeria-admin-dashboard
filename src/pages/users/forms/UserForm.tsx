@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { Row, Col, Input, Form, Card, Space, Select } from 'antd';
-import { getTenants } from '../../http/api';
-import { ITenant } from '../../types';
+import { getTenants } from '../../../http/api';
+import { ITenant } from '../../../types';
 
 const getAllTenants = async () => {
     try {

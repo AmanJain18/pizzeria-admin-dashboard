@@ -27,7 +27,7 @@ import { FieldData, IUser, TCreateUser, TUpdateUser } from '../../types';
 import { useAuthStore } from '../../store';
 import UsersFilter from './UsersFilter';
 import { useState, useMemo, useEffect } from 'react';
-import UserForm from './UserForm';
+import UserForm from './forms/UserForm';
 import { PAGE_SIZE } from '../../constants';
 import { debounce } from 'lodash';
 import { formatDate } from 'date-fns';
@@ -63,7 +63,7 @@ const updateSelectedUser = async (
     }
 };
 
-const User = () => {
+const Users = () => {
     const { user } = useAuthStore();
     const [form] = Form.useForm();
     const [filterForm] = Form.useForm();
@@ -475,4 +475,4 @@ const User = () => {
     );
 };
 
-export default User;
+export default Users;
