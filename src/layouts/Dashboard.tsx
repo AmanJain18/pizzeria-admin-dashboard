@@ -8,6 +8,7 @@ import {
     Layout,
     Menu,
     Space,
+    message,
     theme,
 } from 'antd';
 import type { MenuProps } from 'antd';
@@ -25,6 +26,7 @@ import {
 import { FaClipboardList, FaBell } from 'react-icons/fa';
 import { useMutation } from '@tanstack/react-query';
 import { logout } from '../http/api';
+import axios from 'axios';
 
 const { Header, Content, Footer, Sider } = Layout;
 
@@ -120,7 +122,18 @@ const Dashboard = () => {
         mutationFn: logout,
         onSuccess: async () => {
             logoutUser();
+            message.success('Logged out successfully');
             return;
+        },
+        onError: (error) => {
+            if (axios.isAxiosError(error)) {
+                const errorMessage =
+                    error.response?.data.errors?.[0]?.msg ||
+                    'An unexpected error occurred';
+                message.error(errorMessage);
+            } else {
+                message.error(error?.message || 'An unexpected error occurred');
+            }
         },
     });
 

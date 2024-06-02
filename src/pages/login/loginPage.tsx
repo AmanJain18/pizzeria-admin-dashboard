@@ -24,6 +24,7 @@ import { ILoginCredentials } from '../../types';
 import { self, login, logout } from '../../http/api';
 import { useAuthStore } from '../../store';
 import { hasPermission } from '../../hooks/hasPermission';
+import axios from 'axios';
 
 const passwordRules = [
     {
@@ -69,7 +70,6 @@ const getSelf = async () => {
 const LoginPage = () => {
     const [password, setPassword] = useState('');
     const [isPasswordFocused, setIsPasswordFocused] = useState(false);
-    const [messageApi, contextHolder] = message.useMessage();
     const { setUser, logoutUser } = useAuthStore();
     const { isAllowed } = hasPermission();
 
@@ -93,10 +93,7 @@ const LoginPage = () => {
         mutationKey: ['logout'],
         mutationFn: logout,
         onSuccess: async () => {
-            messageApi.open({
-                type: 'error',
-                content: 'You do not have permission to access this page!',
-            });
+            message.error('You do not have permission to access this page!');
             logoutUser();
             return;
         },
@@ -113,22 +110,25 @@ const LoginPage = () => {
             }
             // Success case: User is allowed
             setUser(data);
-            messageApi.open({
-                type: 'success',
-                content: 'Login successful!',
-            });
+            message.success('Logged in successfully');
         },
         onError: async (error) => {
-            messageApi.open({
-                type: 'error',
-                content: error?.message,
-            });
+            // Check if the error is an AxiosError
+            if (axios.isAxiosError(error)) {
+                // Extract the custom error message from the response
+                const errorMessage =
+                    error.response?.data.errors?.[0]?.msg ||
+                    'An unexpected error occurred';
+                message.error(errorMessage);
+            } else {
+                // Handle other types of errors
+                message.error(error?.message || 'An unexpected error occurred');
+            }
         },
     });
 
     return (
         <>
-            {contextHolder}
             <Layout
                 style={{
                     height: '100vh',

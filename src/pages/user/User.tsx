@@ -31,6 +31,7 @@ import UserForm from './UserForm';
 import { PAGE_SIZE } from '../../constants';
 import { debounce } from 'lodash';
 import { formatDate } from 'date-fns';
+import axios from 'axios';
 
 const getAllUsers = async (queryString: string) => {
     try {
@@ -67,7 +68,6 @@ const User = () => {
     const [form] = Form.useForm();
     const [filterForm] = Form.useForm();
     const queryClient = useQueryClient();
-    const [messageApi, contextHolder] = message.useMessage();
     const [drawerOpen, setDrawerOpen] = useState(false);
     const [selectedRowUser, setSelectedRowUser] = useState<IUser | null>(null);
     const [queryParams, setQueryParams] = useState({
@@ -112,19 +112,20 @@ const User = () => {
         mutationFn: createNewUser,
         onSuccess: async () => {
             await queryClient.invalidateQueries({ queryKey: ['get-users'] });
-            messageApi.open({
-                type: 'success',
-                content: 'New User Created!',
-            });
+            message.success('New User Created!');
             form.resetFields();
             setDrawerOpen(false);
             setSelectedRowUser(null);
         },
         onError: async (error) => {
-            messageApi.open({
-                type: 'error',
-                content: error?.message,
-            });
+            if (axios.isAxiosError(error)) {
+                const errorMessage =
+                    error.response?.data.errors?.[0]?.msg ||
+                    'An unexpected error occurred';
+                message.error(errorMessage);
+            } else {
+                message.error(error?.message || 'An unexpected error occurred');
+            }
         },
     });
 
@@ -137,24 +138,26 @@ const User = () => {
             await queryClient.invalidateQueries({
                 queryKey: ['get-users'],
             });
-            messageApi.open({
-                type: 'success',
-                content: 'User Updated!',
-            });
+            message.success('User Updated!');
             form.resetFields();
             setDrawerOpen(false);
             setSelectedRowUser(null);
         },
         onError: async (error) => {
-            messageApi.open({
-                type: 'error',
-                content: error?.message,
-            });
-            console.log(error);
+            if (axios.isAxiosError(error)) {
+                const errorMessage =
+                    error.response?.data.errors?.[0]?.msg ||
+                    'An unexpected error occurred';
+                message.error(errorMessage);
+                return;
+            } else {
+                message.error(error?.message || 'An unexpected error occurred');
+            }
         },
     });
 
     if (!user || user.role !== 'admin') {
+        message.error('Authorized Access!');
         return <Navigate to='/' replace={true} />;
     }
 
@@ -352,7 +355,6 @@ const User = () => {
 
     return (
         <>
-            {contextHolder}
             <Flex justify='space-between'>
                 <Breadcrumb
                     separator={<RightOutlined />}
