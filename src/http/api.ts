@@ -20,8 +20,8 @@ export const updateUser = async (data: TUpdateUser, userId: number) =>
     api.patch(`/users/${userId}`, data);
 
 // Tenants
-export const getTenants = async (queryString: string) =>
-    api.get(`/tenants?${queryString}`);
+export const getTenants = async (queryString: string | null = null) =>
+    api.get(`/tenants${queryString ? `?${queryString}` : ''}`);
 export const createTenant = async (data: TTenantData) =>
     api.post('/tenants', data);
 export const updateTenant = async (data: TTenantData, userId: number) =>

@@ -160,7 +160,7 @@ const UserForm = ({ inEditMode = false }: { inEditMode: boolean }) => {
                                             allowClear
                                             onChange={() => {}}
                                         >
-                                            {tenantData?.map(
+                                            {tenantData?.data.map(
                                                 (tenant: ITenant) => (
                                                     <Select.Option
                                                         key={tenant.id}
