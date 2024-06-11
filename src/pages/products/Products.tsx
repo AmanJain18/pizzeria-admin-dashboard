@@ -1,9 +1,17 @@
-import { Breadcrumb, Flex } from "antd";
-import { RightOutlined } from '@ant-design/icons';
-import { Link } from "react-router-dom";
+import { Breadcrumb, Button, Flex, message, Form } from 'antd';
+import { RightOutlined, PlusOutlined } from '@ant-design/icons';
+import { Link, Navigate } from 'react-router-dom';
+import ProductsFilter from './ProductsFilter';
+import { useAuthStore } from '../../store';
 
 const Products = () => {
+    const { user } = useAuthStore();
+    const [filterForm] = Form.useForm();
 
+    if (!user || user.role !== 'admin') {
+        message.error('Authorized Access!');
+        return <Navigate to='/' replace={true} />;
+    }
     return (
         <>
             <Flex justify='space-between'>
@@ -19,6 +27,18 @@ const Products = () => {
                     ]}
                 />
             </Flex>
+
+            <Form form={filterForm} onFieldsChange={() => {}}>
+                <ProductsFilter>
+                    <Button
+                        type='primary'
+                        icon={<PlusOutlined />}
+                        onClick={() => {}}
+                    >
+                        Add Product
+                    </Button>
+                </ProductsFilter>
+            </Form>
         </>
     );
 };
