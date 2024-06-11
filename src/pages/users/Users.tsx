@@ -13,9 +13,13 @@ import {
     message,
     theme,
 } from 'antd';
-import { PlusOutlined, SaveFilled, LoadingOutlined } from '@ant-design/icons';
+import {
+    PlusOutlined,
+    SaveFilled,
+    LoadingOutlined,
+    RightOutlined,
+} from '@ant-design/icons';
 import { Link, Navigate } from 'react-router-dom';
-import { RightOutlined } from '@ant-design/icons';
 import {
     keepPreviousData,
     useMutation,
