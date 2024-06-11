@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { useAuthStore } from '../store';
+import { AUTH_SERVICE } from './api';
 
 const api = axios.create({
     baseURL: import.meta.env.VITE_BACKEND_URL, // Set the base URL for the API
@@ -12,7 +13,7 @@ const api = axios.create({
 
 const refresh = async () => {
     await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/auth/refresh`,
+        `${import.meta.env.VITE_BACKEND_URL}${AUTH_SERVICE}/auth/refresh`,
         {},
         {
             withCredentials: true,
