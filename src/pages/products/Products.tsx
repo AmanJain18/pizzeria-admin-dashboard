@@ -21,11 +21,12 @@ import { Link, Navigate } from 'react-router-dom';
 import ProductsFilter from './ProductsFilter';
 import { useAuthStore } from '../../store';
 import { formatDate } from 'date-fns';
-import { ICategory, IProduct } from '../../types';
+import { FieldData, ICategory, IProduct } from '../../types';
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { getProducts } from '../../http/api';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { PAGE_SIZE } from '../../constants';
+import { debounce } from 'lodash';
 
 const columns: TableProps<IProduct>['columns'] = [
     {
@@ -99,7 +100,6 @@ const columns: TableProps<IProduct>['columns'] = [
 const getProductList = async (queryString: string) => {
     try {
         const { data } = await getProducts(queryString);
-        console.log(data);
         return data;
     } catch (error) {
         return Promise.reject(error);
@@ -110,8 +110,8 @@ const Products = () => {
     const { user } = useAuthStore();
     const [filterForm] = Form.useForm();
     const [queryParams, setQueryParams] = useState({
-        currentPage: 1,
-        pageSize: PAGE_SIZE,
+        page: 1,
+        limit: PAGE_SIZE,
     });
 
     const {
@@ -137,6 +137,33 @@ const Products = () => {
         message.error('Authorized Access!');
         return <Navigate to='/' replace={true} />;
     }
+
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const debounceSearch = useMemo(() => {
+        return debounce((value: string | undefined) => {
+            setQueryParams((prev) => ({ ...prev, q: value, page: 1 }));
+        }, 500);
+    }, []);
+
+    const filterChange = (onFieldsChange: FieldData[]) => {
+        const fieldsValues = onFieldsChange
+            .map((field) => ({
+                [field.name[0]]: field.value,
+            }))
+            .reduce((acc, curr) => {
+                return { ...acc, ...curr };
+            }, {});
+
+        if ('q' in fieldsValues) {
+            debounceSearch(fieldsValues.q);
+        } else {
+            setQueryParams((prev) => ({
+                ...prev,
+                ...fieldsValues,
+                page: 1,
+            }));
+        }
+    };
     return (
         <>
             <Flex justify='space-between'>
@@ -161,7 +188,7 @@ const Products = () => {
                 )}
             </Flex>
 
-            <Form form={filterForm} onFieldsChange={() => {}}>
+            <Form form={filterForm} onFieldsChange={filterChange}>
                 <ProductsFilter>
                     <Button
                         type='primary'
@@ -192,13 +219,13 @@ const Products = () => {
                     ]}
                     dataSource={productsData?.data}
                     pagination={{
-                        pageSize: queryParams.pageSize,
-                        current: queryParams.currentPage,
+                        pageSize: queryParams.limit,
+                        current: queryParams.page,
                         total: productsData?.total,
                         onChange: (page) => {
                             setQueryParams((prev) => ({
                                 ...prev,
-                                currentPage: page,
+                                page: page,
                             }));
                         },
                         position: ['bottomCenter'],

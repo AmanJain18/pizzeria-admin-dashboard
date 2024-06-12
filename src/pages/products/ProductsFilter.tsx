@@ -63,7 +63,7 @@ const ProductsFilter = ({ children }: ProductsFilterProps) => {
                             </Form.Item>
                         </Col>
                         <Col span={6}>
-                            <Form.Item name='category'>
+                            <Form.Item name='categoryId'>
                                 <Select
                                     style={{ width: '100%' }}
                                     size='large'
@@ -85,7 +85,7 @@ const ProductsFilter = ({ children }: ProductsFilterProps) => {
                             </Form.Item>
                         </Col>
                         <Col span={6}>
-                            <Form.Item name='tenant'>
+                            <Form.Item name='tenantId'>
                                 <Select
                                     style={{ width: '100%' }}
                                     placeholder='Select Restaurant'
@@ -107,18 +107,18 @@ const ProductsFilter = ({ children }: ProductsFilterProps) => {
                             </Form.Item>
                         </Col>
                         <Col span={6}>
-                            <Form.Item name='isPublished'>
-                                <Space>
+                            <Space>
+                                <Form.Item name='isPublished'>
                                     <Switch
                                         checkedChildren={<CheckOutlined />}
                                         unCheckedChildren={<CloseOutlined />}
                                         // defaultChecked
                                     />
-                                    <Typography.Text>
-                                        Show Published
-                                    </Typography.Text>
-                                </Space>
-                            </Form.Item>
+                                </Form.Item>
+                                <Typography.Text>
+                                    Show Published
+                                </Typography.Text>
+                            </Space>
                         </Col>
                     </Row>
                 </Col>
