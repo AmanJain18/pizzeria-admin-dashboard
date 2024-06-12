@@ -50,3 +50,14 @@ export type ICategory = {
     _id: string;
     name: string;
 };
+
+export interface IProduct {
+    _id: string;
+    name: string;
+    description: string;
+    image: string;
+    tenantId: string;
+    categoryId: string;
+    isPublished: boolean;
+    category: ICategory;
+}

@@ -34,5 +34,15 @@ export const updateTenant = async (data: TTenantData, userId: number) =>
 
 // Catalog Service
 
+// Categories
 export const getCategories = async (queryString: string | null = null) =>
-    api.get(`${CATALOG_SERVICE}/categories${queryString ? `?${queryString}` : ''}`);
+    api.get(
+        `${CATALOG_SERVICE}/categories${queryString ? `?${queryString}` : ''}`,
+    );
+
+// Products
+
+export const getProducts = async (queryString: string | null = null) =>
+    api.get(
+        `${CATALOG_SERVICE}/products${queryString ? `?${queryString}` : ''}`,
+    );
