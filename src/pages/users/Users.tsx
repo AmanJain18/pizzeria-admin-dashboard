@@ -37,6 +37,158 @@ import { debounce } from 'lodash';
 import { formatDate } from 'date-fns';
 import axios from 'axios';
 
+const columns: TableProps<IUser>['columns'] = [
+    {
+        title: 'Id',
+        dataIndex: 'id',
+        key: 'id',
+        render: (text: number) => <Link to={`/users/${text}`}>{text}</Link>,
+        sortDirections: ['ascend', 'descend', 'ascend'],
+        sorter: {
+            compare: (a, b) => a.id - b.id,
+        },
+    },
+    {
+        title: 'Name',
+        dataIndex: 'firstName',
+        key: 'firstName',
+        render: (_, { firstName, lastName }) => {
+            return `${firstName} ${lastName}`;
+        },
+    },
+    {
+        title: 'Email',
+        dataIndex: 'email',
+        key: 'email',
+    },
+    {
+        title: 'Role',
+        key: 'role',
+        dataIndex: 'role',
+        filters: [
+            {
+                text: 'Admin',
+                value: 'admin',
+            },
+            {
+                text: 'Manager',
+                value: 'manager',
+            },
+            {
+                text: 'Customer',
+                value: 'customer',
+            },
+        ],
+        onFilter: (value, record) => record.role.indexOf(value as string) === 0,
+        filterDropdown: ({ setSelectedKeys, confirm, clearFilters }) => (
+            <div style={{ padding: 8 }}>
+                <Tag
+                    key={'customer'}
+                    color='blue'
+                    onClick={() => {
+                        setSelectedKeys(['customer']);
+                        confirm();
+                    }}
+                    style={{
+                        cursor: 'pointer',
+                        marginBottom: 8,
+                        borderRadius: '12px',
+                    }}
+                >
+                    Customer
+                </Tag>
+                <Tag
+                    key={'admin'}
+                    color='green'
+                    onClick={() => {
+                        setSelectedKeys(['admin']);
+                        confirm();
+                    }}
+                    style={{
+                        cursor: 'pointer',
+                        marginBottom: 8,
+                        borderRadius: '12px',
+                    }}
+                >
+                    Admin
+                </Tag>
+                <Tag
+                    key={'manager'}
+                    color='purple'
+                    onClick={() => {
+                        setSelectedKeys(['manager']);
+                        confirm();
+                    }}
+                    style={{
+                        cursor: 'pointer',
+                        marginBottom: 8,
+                        borderRadius: '12px',
+                    }}
+                >
+                    Manager
+                </Tag>
+                <Tag
+                    key={'clear'}
+                    color='red'
+                    onClick={() => {
+                        clearFilters?.();
+                        confirm();
+                    }}
+                    style={{
+                        cursor: 'pointer',
+                        marginBottom: 8,
+                        borderRadius: '12px',
+                    }}
+                >
+                    Clear
+                </Tag>
+            </div>
+        ),
+        render: (_, { role }) => {
+            let color;
+            if (role === 'admin') {
+                color = 'green';
+            } else if (role === 'customer') {
+                color = 'blue';
+            } else {
+                color = 'purple';
+            }
+            return (
+                <Tag
+                    color={color}
+                    key={role}
+                    style={{
+                        textTransform: 'capitalize',
+                        borderRadius: '12px',
+                        padding: '4px',
+                        width: '80px',
+                        textAlign: 'center',
+                    }}
+                >
+                    {role}
+                </Tag>
+            );
+        },
+    },
+    {
+        title: 'Restaurants',
+        dataIndex: 'tenant',
+        key: 'tenant',
+        render: (tenant) => {
+            if (tenant) {
+                return tenant.name;
+            }
+            return 'N/A';
+        },
+    },
+    {
+        title: 'Created At',
+        dataIndex: 'createdAt',
+        key: 'createdAt',
+        render: (text: string) => formatDate(new Date(text), 'E dd MMM, yyyy'),
+    },
+];
+
 const getAllUsers = async (queryString: string) => {
     try {
         const { data } = await getUsers(queryString);
@@ -165,160 +317,6 @@ const Users = () => {
         return <Navigate to='/' replace={true} />;
     }
 
-    const columns: TableProps<IUser>['columns'] = [
-        {
-            title: 'Id',
-            dataIndex: 'id',
-            key: 'id',
-            render: (text: number) => <Link to={`/users/${text}`}>{text}</Link>,
-            sortDirections: ['ascend', 'descend', 'ascend'],
-            sorter: {
-                compare: (a, b) => a.id - b.id,
-            },
-        },
-        {
-            title: 'Name',
-            dataIndex: 'firstName',
-            key: 'firstName',
-            render: (_, { firstName, lastName }) => {
-                return `${firstName} ${lastName}`;
-            },
-        },
-        {
-            title: 'Email',
-            dataIndex: 'email',
-            key: 'email',
-        },
-        {
-            title: 'Role',
-            key: 'role',
-            dataIndex: 'role',
-            filters: [
-                {
-                    text: 'Admin',
-                    value: 'admin',
-                },
-                {
-                    text: 'Manager',
-                    value: 'manager',
-                },
-                {
-                    text: 'Customer',
-                    value: 'customer',
-                },
-            ],
-            onFilter: (value, record) =>
-                record.role.indexOf(value as string) === 0,
-            filterDropdown: ({ setSelectedKeys, confirm, clearFilters }) => (
-                <div style={{ padding: 8 }}>
-                    <Tag
-                        key={'customer'}
-                        color='blue'
-                        onClick={() => {
-                            setSelectedKeys(['customer']);
-                            confirm();
-                        }}
-                        style={{
-                            cursor: 'pointer',
-                            marginBottom: 8,
-                            borderRadius: '12px',
-                        }}
-                    >
-                        Customer
-                    </Tag>
-                    <Tag
-                        key={'admin'}
-                        color='green'
-                        onClick={() => {
-                            setSelectedKeys(['admin']);
-                            confirm();
-                        }}
-                        style={{
-                            cursor: 'pointer',
-                            marginBottom: 8,
-                            borderRadius: '12px',
-                        }}
-                    >
-                        Admin
-                    </Tag>
-                    <Tag
-                        key={'manager'}
-                        color='purple'
-                        onClick={() => {
-                            setSelectedKeys(['manager']);
-                            confirm();
-                        }}
-                        style={{
-                            cursor: 'pointer',
-                            marginBottom: 8,
-                            borderRadius: '12px',
-                        }}
-                    >
-                        Manager
-                    </Tag>
-                    <Tag
-                        key={'clear'}
-                        color='red'
-                        onClick={() => {
-                            clearFilters?.();
-                            confirm();
-                        }}
-                        style={{
-                            cursor: 'pointer',
-                            marginBottom: 8,
-                            borderRadius: '12px',
-                        }}
-                    >
-                        Clear
-                    </Tag>
-                </div>
-            ),
-            render: (_, { role }) => {
-                let color;
-                if (role === 'admin') {
-                    color = 'green';
-                } else if (role === 'customer') {
-                    color = 'blue';
-                } else {
-                    color = 'purple';
-                }
-                return (
-                    <Tag
-                        color={color}
-                        key={role}
-                        style={{
-                            textTransform: 'capitalize',
-                            borderRadius: '12px',
-                            padding: '4px',
-                            width: '80px',
-                            textAlign: 'center',
-                        }}
-                    >
-                        {role}
-                    </Tag>
-                );
-            },
-        },
-        {
-            title: 'Restaurants',
-            dataIndex: 'tenant',
-            key: 'tenant',
-            render: (tenant) => {
-                if (tenant) {
-                    return tenant.name;
-                }
-                return 'N/A';
-            },
-        },
-        {
-            title: 'Created At',
-            dataIndex: 'createdAt',
-            key: 'createdAt',
-            render: (text: string) =>
-                formatDate(new Date(text), 'E dd MMM, yyyy'),
-        },
-    ];
-
     const handleSubmit = async () => {
         await form.validateFields();
         const inEditMode = !!selectedRowUser;
@@ -332,7 +330,7 @@ const Users = () => {
     // eslint-disable-next-line react-hooks/rules-of-hooks
     const debounceSearch = useMemo(() => {
         return debounce((value: string | undefined) => {
-            setQueryParams((prev) => ({ ...prev, q: value }));
+            setQueryParams((prev) => ({ ...prev, q: value, currentPage: 1 }));
         }, 500);
     }, []);
 
