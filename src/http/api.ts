@@ -33,3 +33,6 @@ export const updateTenant = async (data: TTenantData, userId: number) =>
     api.patch(`${AUTH_SERVICE}/tenants/${userId}`, data);
 
 // Catalog Service
+
+export const getCategories = async (queryString: string | null = null) =>
+    api.get(`${CATALOG_SERVICE}/categories${queryString ? `?${queryString}` : ''}`);

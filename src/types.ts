@@ -45,3 +45,8 @@ export type TTenantData = {
     name: string;
     address: string;
 };
+
+export type ICategory = {
+    _id: string;
+    name: string;
+};

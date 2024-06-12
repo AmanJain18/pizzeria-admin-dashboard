@@ -1,10 +1,52 @@
-import { Card, Col, Form, Input, Row, Select, Space, Switch, Typography } from 'antd';
+import {
+    Card,
+    Col,
+    Form,
+    Input,
+    Row,
+    Select,
+    Space,
+    Switch,
+    Typography,
+} from 'antd';
 import { CheckOutlined, CloseOutlined } from '@ant-design/icons';
+import { getCategories, getTenants } from '../../http/api';
+import { useQuery } from '@tanstack/react-query';
+import { ICategory, ITenant } from '../../types';
 
 type ProductsFilterProps = {
     children?: React.ReactNode;
 };
+
+const getCategoriesList = async () => {
+    try {
+        const { data } = await getCategories();
+        return data;
+    } catch (error) {
+        return Promise.reject(error);
+    }
+};
+
+const getTenantsList = async () => {
+    try {
+        const { data } = await getTenants();
+        return data;
+    } catch (error) {
+        return Promise.reject(error);
+    }
+};
+
 const ProductsFilter = ({ children }: ProductsFilterProps) => {
+    const { data: categoriesList } = useQuery({
+        queryKey: ['get-category'],
+        queryFn: getCategoriesList,
+    });
+
+    const { data: restaurantsList } = useQuery({
+        queryKey: ['get-restaurants'],
+        queryFn: getTenantsList,
+    });
+
     return (
         <Card style={{ marginTop: '20px' }}>
             <Row gutter={8}>
@@ -26,15 +68,19 @@ const ProductsFilter = ({ children }: ProductsFilterProps) => {
                                     style={{ width: '100%' }}
                                     size='large'
                                     showSearch
-                                    placeholder='Category'
-                                    allowClear={true}
+                                    placeholder='Select Category'
+                                    allowClear
                                 >
-                                    <Select.Option value='pizza'>
-                                        Pizza
-                                    </Select.Option>
-                                    <Select.Option value='drink'>
-                                        Drink
-                                    </Select.Option>
+                                    {categoriesList?.map(
+                                        (category: ICategory) => (
+                                            <Select.Option
+                                                key={category._id}
+                                                value={category._id}
+                                            >
+                                                {category.name}
+                                            </Select.Option>
+                                        ),
+                                    )}
                                 </Select>
                             </Form.Item>
                         </Col>
@@ -42,17 +88,21 @@ const ProductsFilter = ({ children }: ProductsFilterProps) => {
                             <Form.Item name='tenant'>
                                 <Select
                                     style={{ width: '100%' }}
-                                    placeholder='Restaurant'
+                                    placeholder='Select Restaurant'
                                     size='large'
                                     showSearch
-                                    allowClear={true}
+                                    allowClear
                                 >
-                                    <Select.Option value='2'>
-                                        Pizzeria Andheri
-                                    </Select.Option>
-                                    <Select.Option value='3'>
-                                        Pizzeria Bandra
-                                    </Select.Option>
+                                    {restaurantsList?.data.map(
+                                        (tenant: ITenant) => (
+                                            <Select.Option
+                                                key={tenant.id}
+                                                value={tenant.id}
+                                            >
+                                                {tenant.name}
+                                            </Select.Option>
+                                        ),
+                                    )}
                                 </Select>
                             </Form.Item>
                         </Col>
@@ -62,9 +112,11 @@ const ProductsFilter = ({ children }: ProductsFilterProps) => {
                                     <Switch
                                         checkedChildren={<CheckOutlined />}
                                         unCheckedChildren={<CloseOutlined />}
-                                        defaultChecked
+                                        // defaultChecked
                                     />
-                                    <Typography.Text>Show Published</Typography.Text>
+                                    <Typography.Text>
+                                        Show Published
+                                    </Typography.Text>
                                 </Space>
                             </Form.Item>
                         </Col>
