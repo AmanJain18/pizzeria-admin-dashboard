@@ -101,13 +101,14 @@ const ProductForm = ({ inEditMode = false }: { inEditMode: boolean }) => {
                                         placeholder='Select Category'
                                         size='large'
                                         allowClear
-                                        onChange={() => {}}
                                     >
                                         {categoriesList?.map(
                                             (category: ICategory) => (
                                                 <Select.Option
                                                     key={category._id}
-                                                    value={category._id}
+                                                    value={JSON.stringify(
+                                                        category,
+                                                    )}
                                                 >
                                                     {category.name}
                                                 </Select.Option>
@@ -215,9 +216,13 @@ const ProductForm = ({ inEditMode = false }: { inEditMode: boolean }) => {
                         </Row>
                     </Card>
 
-                    {selectedCategory && <PriceConfig />}
+                    {selectedCategory && (
+                        <PriceConfig selectedCategory={selectedCategory} />
+                    )}
 
-                    {selectedCategory && <Attributes />}
+                    {selectedCategory && (
+                        <Attributes selectedCategory={selectedCategory} />
+                    )}
 
                     <Card title='Additional Info' bordered={false}>
                         <Row>

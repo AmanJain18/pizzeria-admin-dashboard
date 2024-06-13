@@ -46,10 +46,28 @@ export type TTenantData = {
     address: string;
 };
 
-export type ICategory = {
+export interface PriceConfiguration {
+    [key: string]: {
+        _id: string;
+        priceType: 'base' | 'additional';
+        sizeOptions: string[];
+    };
+}
+
+export interface Attribute {
     _id: string;
     name: string;
-};
+    widgetType: 'switch' | 'radio';
+    defaultValue: string;
+    options: string[];
+}
+
+export interface ICategory {
+    _id: string;
+    name: string;
+    priceConfiguration: PriceConfiguration;
+    attributes: Attribute[];
+}
 
 export interface IProduct {
     _id: string;
