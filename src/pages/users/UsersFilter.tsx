@@ -6,10 +6,10 @@ type UsersFilterProps = {
 const UsersFilter = ({ children }: UsersFilterProps) => {
     return (
         <Card style={{ marginTop: '20px' }}>
-            <Row gutter={8}>
+            <Row gutter={8} style={{ alignItems: 'center' }}>
                 <Col span={12}>
-                    <Row gutter={16}>
-                        <Col span={8}>
+                    <Row gutter={16} style={{ height: '40px' }}>
+                        <Col span={8} style={{ height: '40px' }}>
                             <Form.Item name='q'>
                                 <Input.Search
                                     placeholder='Search'
@@ -19,7 +19,7 @@ const UsersFilter = ({ children }: UsersFilterProps) => {
                                 />
                             </Form.Item>
                         </Col>
-                        <Col span={8}>
+                        <Col span={8} style={{ height: '40px' }}>
                             <Form.Item name='role'>
                                 <Select
                                     style={{ width: '100%' }}
@@ -40,7 +40,7 @@ const UsersFilter = ({ children }: UsersFilterProps) => {
                                 </Select>
                             </Form.Item>
                         </Col>
-                        <Col span={8}>
+                        <Col span={8} style={{ height: '40px' }}>
                             <Form.Item name='status'>
                                 <Select
                                     style={{ width: '100%' }}

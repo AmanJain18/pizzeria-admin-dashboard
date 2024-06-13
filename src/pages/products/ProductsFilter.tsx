@@ -1,11 +1,11 @@
 import {
     Card,
     Col,
+    Flex,
     Form,
     Input,
     Row,
     Select,
-    Space,
     Switch,
     Typography,
 } from 'antd';
@@ -51,10 +51,10 @@ const ProductsFilter = ({ children }: ProductsFilterProps) => {
     const { user } = useAuthStore();
     return (
         <Card style={{ marginTop: '20px' }}>
-            <Row gutter={8}>
+            <Row gutter={8} style={{ alignItems: 'center' }}>
                 <Col span={16}>
-                    <Row gutter={16}>
-                        <Col span={6}>
+                    <Row gutter={16} style={{ height: '40px' }}>
+                        <Col span={6} style={{ height: '40px' }}>
                             <Form.Item name='q'>
                                 <Input.Search
                                     placeholder='Search'
@@ -65,7 +65,7 @@ const ProductsFilter = ({ children }: ProductsFilterProps) => {
                             </Form.Item>
                         </Col>
 
-                        <Col span={6}>
+                        <Col span={6} style={{ height: '40px' }}>
                             <Form.Item name='categoryId'>
                                 <Select
                                     style={{ width: '100%' }}
@@ -89,7 +89,7 @@ const ProductsFilter = ({ children }: ProductsFilterProps) => {
                         </Col>
 
                         {user!.role === 'admin' && (
-                            <Col span={6}>
+                            <Col span={6} style={{ height: '40px' }}>
                                 <Form.Item name='tenantId'>
                                     <Select
                                         style={{ width: '100%' }}
@@ -113,19 +113,29 @@ const ProductsFilter = ({ children }: ProductsFilterProps) => {
                             </Col>
                         )}
 
-                        <Col span={6}>
-                            <Space align='baseline'>
-                                <Form.Item name='isPublished'>
+                        <Col span={6} style={{ height: '40px' }}>
+                            <Flex
+                                style={{
+                                    height: '40px',
+                                    alignItems: 'center',
+                                }}
+                            >
+                                <Form.Item
+                                    name='isPublished'
+                                    style={{
+                                        display: 'contents',
+                                    }}
+                                >
                                     <Switch
                                         checkedChildren={<CheckOutlined />}
                                         unCheckedChildren={<CloseOutlined />}
                                         defaultChecked={false}
                                     />
                                 </Form.Item>
-                                <Typography.Text>
+                                <Typography.Text style={{marginLeft: 10}}>
                                     Show Published
                                 </Typography.Text>
-                            </Space>
+                            </Flex>
                         </Col>
                     </Row>
                 </Col>
