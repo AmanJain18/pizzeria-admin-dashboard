@@ -11,11 +11,14 @@ import {
     Spin,
     Image,
     Tag,
+    Drawer,
+    theme,
 } from 'antd';
 import {
     PlusOutlined,
     LoadingOutlined,
     RightOutlined,
+    SaveFilled,
 } from '@ant-design/icons';
 import { Link, Navigate } from 'react-router-dom';
 import ProductsFilter from './ProductsFilter';
@@ -27,6 +30,7 @@ import { getProducts } from '../../http/api';
 import { useMemo, useState } from 'react';
 import { PAGE_SIZE } from '../../constants';
 import { debounce } from 'lodash';
+import ProductForm from './forms/ProductForm';
 
 const columns: TableProps<IProduct>['columns'] = [
     {
@@ -108,12 +112,20 @@ const getProductList = async (queryString: string) => {
 
 const Products = () => {
     const { user } = useAuthStore();
+    const [form] = Form.useForm();
     const [filterForm] = Form.useForm();
+    const [drawerOpen, setDrawerOpen] = useState(false);
+    const [selectedRowProduct, setSelectedRowProduct] = useState<IProduct | null>(
+        null,
+    );
     const [queryParams, setQueryParams] = useState({
         page: 1,
         limit: PAGE_SIZE,
-        tenantId : user!.role === 'manager' ? user!.tenant?.id : undefined,
+        tenantId: user!.role === 'manager' ? user!.tenant?.id : undefined,
     });
+    const {
+        token: { colorBgLayout },
+    } = theme.useToken();
 
     const {
         data: productsData,
@@ -138,6 +150,16 @@ const Products = () => {
         message.error('Authorized Access!');
         return <Navigate to='/' replace={true} />;
     }
+
+    const handleSubmit = async () => {
+        await form.validateFields();
+        // const inEditMode = !!selectedRowProduct;
+        // if (inEditMode) {
+        //     updateUserMutation(form.getFieldsValue());
+        // } else {
+        //     createUserMutation(form.getFieldsValue());
+        // }
+    };
 
     // eslint-disable-next-line react-hooks/rules-of-hooks
     const debounceSearch = useMemo(() => {
@@ -194,7 +216,7 @@ const Products = () => {
                     <Button
                         type='primary'
                         icon={<PlusOutlined />}
-                        onClick={() => {}}
+                        onClick={() => setDrawerOpen(true)}
                     >
                         Add Product
                     </Button>
@@ -238,6 +260,46 @@ const Products = () => {
                     size='middle'
                 />
             )}
+
+            <Drawer
+                title={selectedRowProduct ? 'Edit Product' : 'Add New Product'}
+                placement='right'
+                size={'large'}
+                styles={{ body: { backgroundColor: colorBgLayout } }}
+                closable={true}
+                onClose={() => {
+                    form.resetFields();
+                    setDrawerOpen(false);
+                    setSelectedRowProduct(null);
+                }}
+                open={drawerOpen}
+                destroyOnClose={true}
+                extra={
+                    <Space>
+                        <Button
+                            onClick={() => {
+                                form.resetFields();
+                                setDrawerOpen(false);
+                                setSelectedRowProduct(null);
+                            }}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            type='primary'
+                            icon={<SaveFilled />}
+                            onClick={handleSubmit}
+                            // loading={isPending}
+                        >
+                            {selectedRowProduct ? 'Update' : 'Create'}
+                        </Button>
+                    </Space>
+                }
+            >
+                <Form layout='vertical' autoComplete='off' form={form}>
+                    <ProductForm inEditMode={!!selectedRowProduct} />
+                </Form>
+            </Drawer>
         </>
     );
 };
