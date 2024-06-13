@@ -112,6 +112,7 @@ const Products = () => {
     const [queryParams, setQueryParams] = useState({
         page: 1,
         limit: PAGE_SIZE,
+        tenantId : user!.role === 'manager' ? user!.tenant?.id : undefined,
     });
 
     const {
@@ -133,7 +134,7 @@ const Products = () => {
         placeholderData: keepPreviousData,
     });
 
-    if (!user || user.role !== 'admin') {
+    if (!user || user.role === 'customer') {
         message.error('Authorized Access!');
         return <Navigate to='/' replace={true} />;
     }

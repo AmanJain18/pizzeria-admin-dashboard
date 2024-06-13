@@ -13,6 +13,7 @@ import { CheckOutlined, CloseOutlined } from '@ant-design/icons';
 import { getCategories, getTenants } from '../../http/api';
 import { useQuery } from '@tanstack/react-query';
 import { ICategory, ITenant } from '../../types';
+import { useAuthStore } from '../../store';
 
 type ProductsFilterProps = {
     children?: React.ReactNode;
@@ -47,6 +48,7 @@ const ProductsFilter = ({ children }: ProductsFilterProps) => {
         queryFn: getTenantsList,
     });
 
+    const { user } = useAuthStore();
     return (
         <Card style={{ marginTop: '20px' }}>
             <Row gutter={8}>
@@ -62,6 +64,7 @@ const ProductsFilter = ({ children }: ProductsFilterProps) => {
                                 />
                             </Form.Item>
                         </Col>
+
                         <Col span={6}>
                             <Form.Item name='categoryId'>
                                 <Select
@@ -84,35 +87,39 @@ const ProductsFilter = ({ children }: ProductsFilterProps) => {
                                 </Select>
                             </Form.Item>
                         </Col>
+
+                        {user!.role === 'admin' && (
+                            <Col span={6}>
+                                <Form.Item name='tenantId'>
+                                    <Select
+                                        style={{ width: '100%' }}
+                                        placeholder='Select Restaurant'
+                                        size='large'
+                                        showSearch
+                                        allowClear
+                                    >
+                                        {restaurantsList?.data.map(
+                                            (tenant: ITenant) => (
+                                                <Select.Option
+                                                    key={tenant.id}
+                                                    value={tenant.id}
+                                                >
+                                                    {tenant.name}
+                                                </Select.Option>
+                                            ),
+                                        )}
+                                    </Select>
+                                </Form.Item>
+                            </Col>
+                        )}
+
                         <Col span={6}>
-                            <Form.Item name='tenantId'>
-                                <Select
-                                    style={{ width: '100%' }}
-                                    placeholder='Select Restaurant'
-                                    size='large'
-                                    showSearch
-                                    allowClear
-                                >
-                                    {restaurantsList?.data.map(
-                                        (tenant: ITenant) => (
-                                            <Select.Option
-                                                key={tenant.id}
-                                                value={tenant.id}
-                                            >
-                                                {tenant.name}
-                                            </Select.Option>
-                                        ),
-                                    )}
-                                </Select>
-                            </Form.Item>
-                        </Col>
-                        <Col span={6}>
-                            <Space>
+                            <Space align='baseline'>
                                 <Form.Item name='isPublished'>
                                     <Switch
                                         checkedChildren={<CheckOutlined />}
                                         unCheckedChildren={<CloseOutlined />}
-                                        // defaultChecked
+                                        defaultChecked={false}
                                     />
                                 </Form.Item>
                                 <Typography.Text>
