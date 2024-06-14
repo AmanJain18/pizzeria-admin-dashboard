@@ -18,8 +18,8 @@ const Attributes = ({ selectedCategory }: AttributesProps) => {
         <Card title='Attributes' bordered={false}>
             {category?.attributes.map((attribute) => {
                 return (
-                    <Row gutter={16}>
-                        <Col span={24} key={attribute._id}>
+                    <Row gutter={16} key={attribute._id}>
+                        <Col span={24}>
                             {attribute.widgetType === 'switch' ? (
                                 <Form.Item
                                     name={['attributes', attribute.name]}

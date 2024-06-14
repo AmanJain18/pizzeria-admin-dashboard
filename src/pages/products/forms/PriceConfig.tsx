@@ -53,6 +53,7 @@ const PriceConfig = ({ selectedCategory }: PriceConfigProps) => {
                                                 size='large'
                                                 addonBefore='₹'
                                                 type='number'
+                                                autoComplete='off'
                                             />
                                         </Form.Item>
                                     </Col>

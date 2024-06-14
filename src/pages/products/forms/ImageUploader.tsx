@@ -8,6 +8,7 @@ import {
     Typography,
     UploadFile,
 } from 'antd';
+import ImgCrop from 'antd-img-crop';
 import { PlusOutlined } from '@ant-design/icons';
 import { useState } from 'react';
 
@@ -24,7 +25,10 @@ const ImageUploader = () => {
         beforeUpload: (file) => {
             setFileList([file]);
             const isJpgOrPng =
-                file.type === 'image/jpeg' || file.type === 'image/png';
+                file.type === 'image/jpeg' ||
+                file.type === 'image/png' ||
+                file.type === 'image/jpg' ||
+                file.type === 'image/webp';
             if (!isJpgOrPng) {
                 messageApi.error('You can only upload JPG/PNG file!');
                 return Upload.LIST_IGNORE;
@@ -49,22 +53,30 @@ const ImageUploader = () => {
                     message: 'Product image is required',
                 },
             ]}
+            htmlFor='image'
         >
-            <Upload listType='picture-card' {...props}>
-                {contextHolder}
-                {imageUrl ? (
-                    <Image
-                        src={imageUrl}
-                        style={{ width: '100%' }}
-                        preview={false}
-                    />
-                ) : (
-                    <Space direction='vertical'>
-                        <PlusOutlined />
-                        <Typography.Text>Upload</Typography.Text>
-                    </Space>
-                )}
-            </Upload>
+            <ImgCrop
+                rotationSlider
+                showReset
+                cropShape='round'
+                fillColor='transparent'
+            >
+                <Upload listType='picture-card' {...props} id='image'>
+                    {contextHolder}
+                    {imageUrl ? (
+                        <Image
+                            src={imageUrl}
+                            style={{ width: '100%' }}
+                            preview={false}
+                        />
+                    ) : (
+                        <Space direction='vertical'>
+                            <PlusOutlined />
+                            <Typography.Text>Upload</Typography.Text>
+                        </Space>
+                    )}
+                </Upload>
+            </ImgCrop>
         </Form.Item>
     );
 };

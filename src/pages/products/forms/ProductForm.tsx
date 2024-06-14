@@ -34,7 +34,7 @@ const getTenantsList = async () => {
     }
 };
 
-const ProductForm = ({ inEditMode = false }: { inEditMode: boolean }) => {
+const ProductForm = () => {
     const selectedCategory = Form.useWatch('categoryId');
     const { data: categoriesList } = useQuery({
         queryKey: ['get-category'],
@@ -70,6 +70,7 @@ const ProductForm = ({ inEditMode = false }: { inEditMode: boolean }) => {
                                     <Input
                                         placeholder='Please enter product name'
                                         size='large'
+                                        autoComplete='off'
                                     />
                                 </Form.Item>
                             </Col>
@@ -124,12 +125,12 @@ const ProductForm = ({ inEditMode = false }: { inEditMode: boolean }) => {
                                         rows={2}
                                         maxLength={120}
                                         style={{ resize: 'none' }}
+                                        autoComplete='off'
                                     />
                                 </Form.Item>
                             </Col>
                         </Row>
                     </Card>
-                    {/* {!inEditMode && ( */}
                     <Card title='Product Image' bordered={false}>
                         <Row gutter={16}>
                             <Col span={12}>
@@ -137,7 +138,6 @@ const ProductForm = ({ inEditMode = false }: { inEditMode: boolean }) => {
                             </Col>
                         </Row>
                     </Card>
-                    {/* )} */}
                     <Card title='Restaurant Info' bordered={false}>
                         <Row>
                             <Col span={24}>
