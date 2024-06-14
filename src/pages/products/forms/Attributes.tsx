@@ -9,7 +9,6 @@ const Attributes = ({ selectedCategory }: AttributesProps) => {
     const category: ICategory | null = selectedCategory
         ? JSON.parse(selectedCategory)
         : null;
-    console.log(category);
 
     if (!category) {
         return null;

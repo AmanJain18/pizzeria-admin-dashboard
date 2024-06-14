@@ -7,17 +7,14 @@ import {
     Card,
     Space,
     Select,
-    Upload,
-    Image,
     Typography,
     Switch,
 } from 'antd';
 import { getCategories, getTenants } from '../../../http/api';
 import { ICategory, ITenant } from '../../../types';
-import { PlusOutlined, LoadingOutlined } from '@ant-design/icons';
-import { useState } from 'react';
 import PriceConfig from './PriceConfig';
 import Attributes from './Attributes';
+import ImageUploader from './ImageUploader';
 
 const getCategoriesList = async () => {
     try {
@@ -49,15 +46,6 @@ const ProductForm = ({ inEditMode = false }: { inEditMode: boolean }) => {
         queryFn: getTenantsList,
     });
 
-    const [loading, setLoading] = useState(false);
-    const [imageUrl, setImageUrl] = useState<string>();
-
-    const uploadButton = (
-        <button style={{ border: 0, background: 'none' }} type='button'>
-            {loading ? <LoadingOutlined /> : <PlusOutlined />}
-            <div style={{ marginTop: 8 }}>Upload</div>
-        </button>
-    );
     return (
         <Row>
             <Col span={24}>
@@ -145,37 +133,7 @@ const ProductForm = ({ inEditMode = false }: { inEditMode: boolean }) => {
                     <Card title='Product Image' bordered={false}>
                         <Row gutter={16}>
                             <Col span={12}>
-                                <Form.Item
-                                    name='image'
-                                    label='Upload Image'
-                                    hasFeedback
-                                    rules={[
-                                        {
-                                            required: true,
-                                            message:
-                                                'Product image is required',
-                                        },
-                                    ]}
-                                >
-                                    <Upload
-                                        name='avatar'
-                                        listType='picture-card'
-                                        className='avatar-uploader'
-                                        showUploadList={false}
-                                        action=''
-                                        // beforeUpload={beforeUpload}
-                                        // onChange={handleChange}
-                                    >
-                                        {imageUrl ? (
-                                            <Image
-                                                src={imageUrl}
-                                                style={{ width: '100%' }}
-                                            />
-                                        ) : (
-                                            uploadButton
-                                        )}
-                                    </Upload>
-                                </Form.Item>
+                                <ImageUploader />
                             </Col>
                         </Row>
                     </Card>
