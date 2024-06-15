@@ -48,7 +48,7 @@ export type TTenantData = {
 
 export interface PriceConfiguration {
     [key: string]: {
-        _id: string;
+        _id?: string;
         priceType: 'base' | 'additional';
         sizeOptions: string[];
     };
@@ -79,3 +79,16 @@ export interface IProduct {
     isPublished: boolean;
     category: ICategory;
 }
+
+export type TCreateProduct = IProduct & {
+    image: {
+        file: File | null;
+    };
+    priceConfiguration: PriceConfiguration;
+    attributes: [
+        {
+            name: string;
+            value: string | boolean;
+        },
+    ];
+};

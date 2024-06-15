@@ -25,12 +25,19 @@ import ProductsFilter from './ProductsFilter';
 import { useAuthStore } from '../../store';
 import { formatDate } from 'date-fns';
 import { FieldData, ICategory, IProduct } from '../../types';
-import { useQuery, keepPreviousData } from '@tanstack/react-query';
-import { getProducts } from '../../http/api';
+import {
+    useQuery,
+    keepPreviousData,
+    useMutation,
+    useQueryClient,
+} from '@tanstack/react-query';
+import { createProduct, getProducts } from '../../http/api';
 import { useMemo, useState } from 'react';
 import { PAGE_SIZE } from '../../constants';
 import { debounce } from 'lodash';
 import ProductForm from './forms/ProductForm';
+import axios from 'axios';
+import { toFormData } from './helper';
 
 const columns: TableProps<IProduct>['columns'] = [
     {
@@ -110,14 +117,23 @@ const getProductList = async (queryString: string) => {
     }
 };
 
+const addNewProduct = async (newProductData: FormData) => {
+    try {
+        const { data } = await createProduct(newProductData);
+        return data;
+    } catch (error) {
+        return Promise.reject(error);
+    }
+};
+
 const Products = () => {
     const { user } = useAuthStore();
     const [form] = Form.useForm();
     const [filterForm] = Form.useForm();
+    const queryClient = useQueryClient();
     const [drawerOpen, setDrawerOpen] = useState(false);
-    const [selectedRowProduct, setSelectedRowProduct] = useState<IProduct | null>(
-        null,
-    );
+    const [selectedRowProduct, setSelectedRowProduct] =
+        useState<IProduct | null>(null);
     const [queryParams, setQueryParams] = useState({
         page: 1,
         limit: PAGE_SIZE,
@@ -146,6 +162,27 @@ const Products = () => {
         placeholderData: keepPreviousData,
     });
 
+    const { mutate: addProductMutation, isPending } = useMutation({
+        mutationKey: ['products'],
+        mutationFn: addNewProduct,
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: ['get-products'] });
+            form.resetFields();
+            setDrawerOpen(false);
+            message.success('New Product Added!');
+        },
+        onError: async (error) => {
+            if (axios.isAxiosError(error)) {
+                const errorMessage =
+                    error.response?.data.errors?.[0]?.msg ||
+                    'An unexpected error occurred';
+                message.error(errorMessage);
+            } else {
+                message.error(error?.message || 'An unexpected error occurred');
+            }
+        },
+    });
+
     if (!user || user.role === 'customer') {
         message.error('Authorized Access!');
         return <Navigate to='/' replace={true} />;
@@ -153,6 +190,38 @@ const Products = () => {
 
     const handleSubmit = async () => {
         await form.validateFields();
+        const categoryId = JSON.parse(form.getFieldValue('categoryId'))._id;
+        const priceConfiguration = Object.entries(
+            form.getFieldValue('priceConfiguration'),
+        ).reduce((acc, [key, value]) => {
+            const parsedKey = JSON.parse(key);
+            return {
+                ...acc,
+                [parsedKey.key]: {
+                    priceType: parsedKey.priceType,
+                    sizeOptions: value,
+                },
+            };
+        }, {});
+
+        const attributes = Object.entries(form.getFieldValue('attributes')).map(
+            ([key, value]) => {
+                return {
+                    name: key,
+                    value: value,
+                };
+            },
+        );
+
+        const newProductData = toFormData({
+            ...form.getFieldsValue(),
+            categoryId,
+            priceConfiguration,
+            attributes,
+        });
+
+        console.log('data', newProductData);
+        addProductMutation(newProductData);
         // const inEditMode = !!selectedRowProduct;
         // if (inEditMode) {
         //     updateUserMutation(form.getFieldsValue());
@@ -289,15 +358,15 @@ const Products = () => {
                             type='primary'
                             icon={<SaveFilled />}
                             onClick={handleSubmit}
-                            // loading={isPending}
+                            loading={isPending}
                         >
-                            {selectedRowProduct ? 'Update' : 'Create'}
+                            {selectedRowProduct ? 'Update' : 'Add'}
                         </Button>
                     </Space>
                 }
             >
                 <Form layout='vertical' autoComplete='off' form={form}>
-                    <ProductForm inEditMode={!!selectedRowProduct} />
+                    <ProductForm />
                 </Form>
             </Drawer>
         </>

@@ -46,3 +46,11 @@ export const getProducts = async (queryString: string | null = null) =>
     api.get(
         `${CATALOG_SERVICE}/products${queryString ? `?${queryString}` : ''}`,
     );
+
+export const createProduct = async (data: FormData) =>
+    api.post(`${CATALOG_SERVICE}/products`, data, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+            Accept: 'image/*',
+        },
+    });
