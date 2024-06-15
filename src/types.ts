@@ -92,3 +92,5 @@ export type TCreateProduct = IProduct & {
         },
     ];
 };
+
+export type TUpdateProduct = TCreateProduct;

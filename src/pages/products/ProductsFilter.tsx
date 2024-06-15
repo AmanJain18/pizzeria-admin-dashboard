@@ -39,7 +39,7 @@ const getTenantsList = async () => {
 
 const ProductsFilter = ({ children }: ProductsFilterProps) => {
     const { data: categoriesList } = useQuery({
-        queryKey: ['get-category'],
+        queryKey: ['get-categories'],
         queryFn: getCategoriesList,
     });
 

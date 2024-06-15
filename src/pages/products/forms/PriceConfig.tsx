@@ -1,14 +1,21 @@
 import { Card, Row, Col, Form, Space, Typography, InputNumber } from 'antd';
 import { ICategory } from '../../../types';
+import { useQuery } from '@tanstack/react-query';
+import { getCategory } from '../../../http/api';
 
 type PriceConfigProps = {
-    selectedCategory: string;
+    selectedCategoryId: string;
 };
 
-const PriceConfig = ({ selectedCategory }: PriceConfigProps) => {
-    const category: ICategory | null = selectedCategory
-        ? JSON.parse(selectedCategory)
-        : null;
+const PriceConfig = ({ selectedCategoryId }: PriceConfigProps) => {
+    const { data: category } = useQuery<ICategory>({
+        queryKey: ['get-category', selectedCategoryId],
+        queryFn: async () => {
+            const { data } = await getCategory(selectedCategoryId);
+            return data;
+        },
+        staleTime: 1000 * 60 * 5, // 5 minutes
+    });
 
     if (!category) {
         return null;

@@ -9,6 +9,7 @@ import {
     Select,
     Typography,
     Switch,
+    FormInstance,
 } from 'antd';
 import { getCategories, getTenants } from '../../../http/api';
 import { ICategory, ITenant } from '../../../types';
@@ -35,11 +36,11 @@ const getTenantsList = async () => {
     }
 };
 
-const ProductForm = () => {
+const ProductForm = ({ form }: { form: FormInstance }) => {
     const { user } = useAuthStore();
-    const selectedCategory = Form.useWatch('categoryId');
+    const selectedCategoryId = Form.useWatch('categoryId');
     const { data: categoriesList } = useQuery({
-        queryKey: ['get-category'],
+        queryKey: ['get-categories'],
         queryFn: getCategoriesList,
     });
 
@@ -97,9 +98,7 @@ const ProductForm = () => {
                                             (category: ICategory) => (
                                                 <Select.Option
                                                     key={category._id}
-                                                    value={JSON.stringify(
-                                                        category,
-                                                    )}
+                                                    value={category._id}
                                                 >
                                                     {category.name}
                                                 </Select.Option>
@@ -124,7 +123,7 @@ const ProductForm = () => {
                                         size='middle'
                                         allowClear
                                         rows={2}
-                                        maxLength={120}
+                                        maxLength={250}
                                         style={{ resize: 'none' }}
                                         autoComplete='off'
                                     />
@@ -135,7 +134,9 @@ const ProductForm = () => {
                     <Card title='Product Image' bordered={false}>
                         <Row gutter={16}>
                             <Col span={12}>
-                                <ImageUploader />
+                                <ImageUploader
+                                    initialImage={form.getFieldValue('image')}
+                                />
                             </Col>
                         </Row>
                     </Card>
@@ -166,7 +167,9 @@ const ProductForm = () => {
                                                 (tenant: ITenant) => (
                                                     <Select.Option
                                                         key={tenant.id}
-                                                        value={tenant.id}
+                                                        value={String(
+                                                            tenant.id,
+                                                        )}
                                                     >
                                                         {tenant.name}
                                                     </Select.Option>
@@ -179,12 +182,12 @@ const ProductForm = () => {
                         </Card>
                     )}
 
-                    {selectedCategory && (
-                        <PriceConfig selectedCategory={selectedCategory} />
+                    {selectedCategoryId && (
+                        <PriceConfig selectedCategoryId={selectedCategoryId} />
                     )}
 
-                    {selectedCategory && (
-                        <Attributes selectedCategory={selectedCategory} />
+                    {selectedCategoryId && (
+                        <Attributes selectedCategoryId={selectedCategoryId} />
                     )}
 
                     <Card title='Additional Info' bordered={false}>

@@ -1,15 +1,22 @@
 import { Card, Row, Col, Form, Radio, Switch } from 'antd';
 import { ICategory } from '../../../types';
+import { useQuery } from '@tanstack/react-query';
+import { getCategory } from '../../../http/api';
 
 type AttributesProps = {
-    selectedCategory: string;
+    selectedCategoryId: string;
 };
 
-const Attributes = ({ selectedCategory }: AttributesProps) => {
-    const category: ICategory | null = selectedCategory
-        ? JSON.parse(selectedCategory)
-        : null;
-
+const Attributes = ({ selectedCategoryId }: AttributesProps) => {
+    const { data: category } = useQuery<ICategory>({
+        queryKey: ['get-category', selectedCategoryId],
+        queryFn: async () => {
+            const { data } = await getCategory(selectedCategoryId);
+            return data;
+        },
+        staleTime: 1000 * 60 * 5, // 5 minutes
+    });
+    
     if (!category) {
         return null;
     }

@@ -24,15 +24,15 @@ import { Link, Navigate } from 'react-router-dom';
 import ProductsFilter from './ProductsFilter';
 import { useAuthStore } from '../../store';
 import { formatDate } from 'date-fns';
-import { FieldData, ICategory, IProduct } from '../../types';
+import { FieldData, ICategory, IProduct, TUpdateProduct } from '../../types';
 import {
     useQuery,
     keepPreviousData,
     useMutation,
     useQueryClient,
 } from '@tanstack/react-query';
-import { createProduct, getProducts } from '../../http/api';
-import { useMemo, useState } from 'react';
+import { createProduct, getProducts, updateProduct } from '../../http/api';
+import { useEffect, useMemo, useState } from 'react';
 import { PAGE_SIZE } from '../../constants';
 import { debounce } from 'lodash';
 import ProductForm from './forms/ProductForm';
@@ -128,6 +128,18 @@ const addNewProduct = async (newProductData: FormData) => {
     }
 };
 
+const updateSelectedProduct = async (
+    updateProductData: FormData,
+    productId: string,
+) => {
+    try {
+        const { data } = await updateProduct(updateProductData, productId);
+        return data;
+    } catch (error) {
+        return Promise.reject(error);
+    }
+};
+
 const Products = () => {
     const { user } = useAuthStore();
     const [form] = Form.useForm();
@@ -135,7 +147,7 @@ const Products = () => {
     const queryClient = useQueryClient();
     const [drawerOpen, setDrawerOpen] = useState(false);
     const [selectedRowProduct, setSelectedRowProduct] =
-        useState<IProduct | null>(null);
+        useState<TUpdateProduct | null>(null);
     const [queryParams, setQueryParams] = useState({
         page: 1,
         limit: PAGE_SIZE,
@@ -144,6 +156,35 @@ const Products = () => {
     const {
         token: { colorBgLayout },
     } = theme.useToken();
+
+    useEffect(() => {
+        if (selectedRowProduct) {
+            const attributes = selectedRowProduct.attributes.reduce(
+                (acc, curr) => {
+                    return { ...acc, [curr.name]: curr.value };
+                },
+                {},
+            );
+            const priceConfiguration = Object.entries(
+                selectedRowProduct.priceConfiguration,
+            ).reduce((acc, [key, value]) => {
+                return {
+                    ...acc,
+                    [JSON.stringify({ key, priceType: value.priceType })]:
+                        value.sizeOptions,
+                };
+            }, {});
+
+            form.setFieldsValue({
+                ...selectedRowProduct,
+                priceConfiguration,
+                attributes,
+                categoryId: selectedRowProduct.category._id,
+                tenantId: selectedRowProduct.tenantId,
+            });
+            setDrawerOpen(true);
+        }
+    }, [selectedRowProduct, form]);
 
     const {
         data: productsData,
@@ -165,12 +206,13 @@ const Products = () => {
     });
 
     const { mutate: addProductMutation, isPending } = useMutation({
-        mutationKey: ['products'],
+        mutationKey: ['add-product'],
         mutationFn: addNewProduct,
         onSuccess: async () => {
             await queryClient.invalidateQueries({ queryKey: ['get-products'] });
             form.resetFields();
             setDrawerOpen(false);
+            setSelectedRowProduct(null);
             message.success('New Product Added!');
         },
         onError: async (error) => {
@@ -185,6 +227,33 @@ const Products = () => {
         },
     });
 
+    const { mutate: updateProductMutation } = useMutation({
+        mutationKey: ['update-product'],
+        mutationFn: (data: FormData) => {
+            return updateSelectedProduct(data, selectedRowProduct!._id);
+        },
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({
+                queryKey: ['get-products'],
+            });
+            form.resetFields();
+            setDrawerOpen(false);
+            setSelectedRowProduct(null);
+            message.success('Product Updated!');
+        },
+        onError: async (error) => {
+            if (axios.isAxiosError(error)) {
+                const errorMessage =
+                    error.response?.data.errors?.[0]?.msg ||
+                    'An unexpected error occurred';
+                message.error(errorMessage);
+                return;
+            } else {
+                message.error(error?.message || 'An unexpected error occurred');
+            }
+        },
+    });
+
     if (!user || user.role === 'customer') {
         message.error('Authorized Access!');
         return <Navigate to='/' replace={true} />;
@@ -192,7 +261,6 @@ const Products = () => {
 
     const handleSubmit = async () => {
         await form.validateFields();
-        const categoryId = JSON.parse(form.getFieldValue('categoryId'))._id;
         const priceConfiguration = Object.entries(
             form.getFieldValue('priceConfiguration'),
         ).reduce((acc, [key, value]) => {
@@ -221,19 +289,16 @@ const Products = () => {
                 user.role === 'manager'
                     ? user.tenant?.id
                     : form.getFieldValue('tenantId'),
-            categoryId,
             priceConfiguration,
             attributes,
         });
 
-        console.log('data', newProductData);
-        addProductMutation(newProductData);
-        // const inEditMode = !!selectedRowProduct;
-        // if (inEditMode) {
-        //     updateUserMutation(form.getFieldsValue());
-        // } else {
-        //     createUserMutation(form.getFieldsValue());
-        // }
+        const inEditMode = !!selectedRowProduct;
+        if (inEditMode) {
+            updateProductMutation(newProductData);
+        } else {
+            addProductMutation(newProductData);
+        }
     };
 
     // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -305,9 +370,14 @@ const Products = () => {
                         {
                             title: 'Action',
                             key: 'action',
-                            render: () => (
+                            render: (record: TUpdateProduct) => (
                                 <Space size='large'>
-                                    <Button type='link' onClick={() => {}}>
+                                    <Button
+                                        type='link'
+                                        onClick={() => {
+                                            setSelectedRowProduct(record);
+                                        }}
+                                    >
                                         Edit
                                     </Button>
                                     <Button type='link'>Delete</Button>
@@ -372,7 +442,7 @@ const Products = () => {
                 }
             >
                 <Form layout='vertical' autoComplete='off' form={form}>
-                    <ProductForm />
+                    <ProductForm form={form} />
                 </Form>
             </Drawer>
         </>

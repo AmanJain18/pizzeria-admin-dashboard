@@ -11,9 +11,9 @@ import {
 import { PlusOutlined } from '@ant-design/icons';
 import { useState } from 'react';
 
-const ImageUploader = () => {
+const ImageUploader = ({ initialImage }: { initialImage: string }) => {
     const [messageApi, contextHolder] = message.useMessage();
-    const [imageUrl, setImageUrl] = useState<string>();
+    const [imageUrl, setImageUrl] = useState<string>(initialImage);
     const [fileList, setFileList] = useState<UploadFile[]>([]);
 
     const props: UploadProps = {
@@ -59,7 +59,7 @@ const ImageUploader = () => {
         >
             <Upload {...props}>
                 {contextHolder}
-                {fileList.length > 0 ? (
+                {imageUrl ? (
                     <Image
                         src={imageUrl}
                         style={{ width: '100%' }}

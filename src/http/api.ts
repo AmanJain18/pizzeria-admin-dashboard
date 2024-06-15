@@ -57,6 +57,11 @@ export const getCategories = async (queryString: string | null = null) =>
         `${CATALOG_SERVICE}/categories${queryString ? `?${queryString}` : ''}`,
     );
 
+// Get a category
+
+export const getCategory = async (categoryId: string) =>
+    api.get(`${CATALOG_SERVICE}/categories/${categoryId}`);
+
 //? Products
 // Get all products
 export const getProducts = async (queryString: string | null = null) =>
@@ -75,7 +80,7 @@ export const createProduct = async (data: FormData) =>
 
 // Update a product
 export const updateProduct = async (data: FormData, productId: string) =>
-    api.patch(`${CATALOG_SERVICE}/products/${productId}`, data, {
+    api.put(`${CATALOG_SERVICE}/products/${productId}`, data, {
         headers: {
             'Content-Type': 'multipart/form-data',
             Accept: 'image/*',
