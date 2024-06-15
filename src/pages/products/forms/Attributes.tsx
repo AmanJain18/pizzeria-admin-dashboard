@@ -24,6 +24,11 @@ const Attributes = ({ selectedCategory }: AttributesProps) => {
                                 <Form.Item
                                     name={['attributes', attribute.name]}
                                     label={attribute.name}
+                                    initialValue={
+                                        attribute.defaultValue === 'Yes'
+                                            ? true
+                                            : false
+                                    }
                                 >
                                     <Switch
                                         checkedChildren='Yes'

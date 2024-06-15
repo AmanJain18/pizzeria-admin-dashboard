@@ -191,6 +191,7 @@ const ProductForm = () => {
                                         style={{
                                             display: 'contents',
                                         }}
+                                        initialValue={false}
                                     >
                                         <Switch
                                             checkedChildren='Yes'

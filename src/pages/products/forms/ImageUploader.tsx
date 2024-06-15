@@ -8,20 +8,20 @@ import {
     Typography,
     UploadFile,
 } from 'antd';
-import ImgCrop from 'antd-img-crop';
 import { PlusOutlined } from '@ant-design/icons';
 import { useState } from 'react';
 
 const ImageUploader = () => {
     const [messageApi, contextHolder] = message.useMessage();
-    const [imageUrl, setImageUrl] = useState<string | null>(null);
+    const [imageUrl, setImageUrl] = useState<string>();
     const [fileList, setFileList] = useState<UploadFile[]>([]);
 
     const props: UploadProps = {
         name: 'file',
+        listType: 'picture-card',
+        maxCount: 1,
         multiple: false,
         showUploadList: false,
-        fileList,
         beforeUpload: (file) => {
             setFileList([file]);
             const isJpgOrPng =
@@ -38,9 +38,12 @@ const ImageUploader = () => {
                 messageApi.error('Image must smaller than 2MB!');
                 return Upload.LIST_IGNORE;
             }
+            setFileList([file]);
             setImageUrl(URL.createObjectURL(file));
             return false; // Prevent default upload behavior
         },
+        fileList,
+        onChange: ({ fileList }) => setFileList(fileList), // Ensure only one file
     };
 
     return (
@@ -53,30 +56,22 @@ const ImageUploader = () => {
                     message: 'Product image is required',
                 },
             ]}
-            htmlFor='image'
         >
-            <ImgCrop
-                rotationSlider
-                showReset
-                cropShape='round'
-                fillColor='transparent'
-            >
-                <Upload listType='picture-card' {...props} id='image'>
-                    {contextHolder}
-                    {imageUrl ? (
-                        <Image
-                            src={imageUrl}
-                            style={{ width: '100%' }}
-                            preview={false}
-                        />
-                    ) : (
-                        <Space direction='vertical'>
-                            <PlusOutlined />
-                            <Typography.Text>Upload</Typography.Text>
-                        </Space>
-                    )}
-                </Upload>
-            </ImgCrop>
+            <Upload {...props}>
+                {contextHolder}
+                {fileList.length > 0 ? (
+                    <Image
+                        src={imageUrl}
+                        style={{ width: '100%' }}
+                        preview={false}
+                    />
+                ) : (
+                    <Space direction='vertical'>
+                        <PlusOutlined />
+                        <Typography.Text>Upload</Typography.Text>
+                    </Space>
+                )}
+            </Upload>
         </Form.Item>
     );
 };
