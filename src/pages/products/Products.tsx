@@ -47,7 +47,9 @@ const columns: TableProps<IProduct>['columns'] = [
         render: (_, { image, name }) => {
             return (
                 <>
-                    <Space>
+                    <Space
+                        style={{ float: 'inline-start', marginLeft: '50px' }}
+                    >
                         <Image src={image} width={50} />
                         <Typography.Text>{name}</Typography.Text>
                     </Space>
@@ -215,6 +217,10 @@ const Products = () => {
 
         const newProductData = toFormData({
             ...form.getFieldsValue(),
+            tenantId:
+                user.role === 'manager'
+                    ? user.tenant?.id
+                    : form.getFieldValue('tenantId'),
             categoryId,
             priceConfiguration,
             attributes,
