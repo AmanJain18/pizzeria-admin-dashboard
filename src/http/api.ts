@@ -35,6 +35,14 @@ export const createUser = async (data: TCreateUser) =>
 export const updateUser = async (data: TUpdateUser, userId: number) =>
     api.patch(`${AUTH_SERVICE}/users/${userId}`, data);
 
+// Delete a user
+export const deleteUser = async (userId: number) =>
+    api.delete(`${AUTH_SERVICE}/users/${userId}`);
+
+// Get a user by id
+export const getUser = async (userId: number) =>
+    api.get(`${AUTH_SERVICE}/users/${userId}`);
+
 //? Tenants
 // Get all tenants
 export const getTenants = async (queryString: string | null = null) =>
