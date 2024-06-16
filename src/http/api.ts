@@ -56,6 +56,14 @@ export const createTenant = async (data: TTenantData) =>
 export const updateTenant = async (data: TTenantData, userId: number) =>
     api.patch(`${AUTH_SERVICE}/tenants/${userId}`, data);
 
+// Delete a tenant
+export const deleteTenant = async (userId: number) =>
+    api.delete(`${AUTH_SERVICE}/tenants/${userId}`);
+
+// Get a tenant by id
+export const getTenant = async (userId: number) =>
+    api.get(`${AUTH_SERVICE}/tenants/${userId}`);
+
 //* Catalog Service
 
 //? Categories
