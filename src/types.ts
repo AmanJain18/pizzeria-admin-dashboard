@@ -69,6 +69,12 @@ export interface ICategory {
     attributes: Attribute[];
 }
 
+export type TCreateCategory = {
+    name: string;
+    priceConfiguration: PriceConfiguration;
+    attributes: Attribute[];
+};
+
 export interface IProduct {
     _id: string;
     name: string;

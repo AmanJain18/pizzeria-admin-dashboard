@@ -3,6 +3,7 @@ import {
     ILoginCredentials,
     TUpdateUser,
     TTenantData,
+    TCreateCategory,
 } from '../types';
 import api from './client';
 
@@ -73,10 +74,13 @@ export const getCategories = async (queryString: string | null = null) =>
         `${CATALOG_SERVICE}/categories${queryString ? `?${queryString}` : ''}`,
     );
 
-// Get a category
-
+// Get a category by id
 export const getCategory = async (categoryId: string) =>
     api.get(`${CATALOG_SERVICE}/categories/${categoryId}`);
+
+// Create a category
+export const createCategory = async (data: TCreateCategory) =>
+    api.post(`${CATALOG_SERVICE}/categories`, data);
 
 //? Products
 // Get all products
